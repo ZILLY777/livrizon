@@ -165,7 +165,6 @@ public class UserRequest {
             Connection connection= Function.connect();
             response = ResponseEntity.ok().body(new Page(
                     findUserInformationById(user_id,connection),
-                    findPreviewFilesFromPage(user_id,null,6,connection),
                     Request.getPostsBy(JwtUtil.extractIdOrNull(auth),TableName.user_posts,null, Column.user_id,user_id,null))
             );
             connection.close();

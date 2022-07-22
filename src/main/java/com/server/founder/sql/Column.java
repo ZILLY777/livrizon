@@ -10,6 +10,9 @@ public class Column {
     public static String public_chat_id= "public_chat_id";
     public static String name= "name";
     public static String confirm= "confirm";
+    public static String description= "description";
+    public static String city= "city";
+    public static String birthday= "birthday";
     public static String files_number= "files_number";
     public static String subscribe_id= "subscribe_id";
     public static String like_id= "like_id";

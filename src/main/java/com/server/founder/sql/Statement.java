@@ -243,16 +243,14 @@ public class Statement {
             "   password varchar(40)," +
             "   status boolean default true," +
             "   created datetime default now()," +
-            "   role enum('USER','ADMIN','CHANNEL','INFORMATION','SUPPORT') default 'USER'," +
+            "   role enum('USER','ADMIN','COMPANY','GROUP','CHANNEL','INFORMATION','SUPPORT') default 'USER'," +
             "   registration enum('PHONE','MAIL','LOGIN')," +
             "   first_name varchar(20)," +
             "   last_name varchar(20)," +
             "   confirm boolean default false,"+
             "   birthday datetime,"+
             "   city text,"+
-            "   description text,"+
-            "   company text,"+
-            "   education text"+
+            "   description text"+
             ")";
     public static String createTableLineUsers="create table if not exists line_users(\n" +
             "\tvote_id int primary key auto_increment not null,\n" +
@@ -414,16 +412,10 @@ public class Statement {
                 "\t)=public_avatar.file_id\n" +
                 ")\n";
     }
-    public static String selectUserInformation="SELECT users.user_id,first_name,last_name,user_avatar.url,users.confirm,birthday,city,company,education,\n" +
+    public static String selectUserInformation="SELECT users.user_id,first_name,last_name,user_avatar.url,users.confirm,description,birthday,city,\n" +
             "(SELECT count(sub_id) FROM subscribes where subscribes.sub_id=users.user_id) followers,\n" +
             "(SELECT count(sub_id) FROM subscribes where subscribes.user_id=users.user_id) subscribes,\n" +
-            "(SELECT count(post_files.post_file_id) as number\n" +
-            "FROM user_posts\n" +
-            "inner join post_files on(user_posts.post_id=post_files.post_id)\n" +
-            "inner join files on(post_files.file_id=files.file_id)\n" +
-            "where user_posts.page=users.user_id and user_posts.user_id=user_posts.page and user_posts.repost is null and \n" +
-            "(contentType like 'image%' or contentType like 'video%')\n" +
-            ") as files_number\n" +
+            "(SELECT count(user_post_id) from user_posts where user_posts.user_id=users.user_id) as post_number\n" +
             "FROM users\n" +
             selectUserAvatar()+
             "where users.user_id = ?\n" +
