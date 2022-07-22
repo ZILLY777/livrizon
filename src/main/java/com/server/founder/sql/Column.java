@@ -14,6 +14,7 @@ public class Column {
     public static String city= "city";
     public static String birthday= "birthday";
     public static String files_number= "files_number";
+    public static String post_number= "post_number";
     public static String subscribe_id= "subscribe_id";
     public static String like_id= "like_id";
     public static String status= "status";

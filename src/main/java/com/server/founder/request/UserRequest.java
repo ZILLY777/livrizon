@@ -169,6 +169,7 @@ public class UserRequest {
             );
             connection.close();
         } catch (SQLException e){
+            System.out.println(e);
             response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
         return response;

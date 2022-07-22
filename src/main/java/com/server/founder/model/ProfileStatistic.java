@@ -14,13 +14,13 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 public class ProfileStatistic {
     int followers;
     int subscribes;
-    int files;
+    int post_number;
     public ProfileStatistic() {
     }
     public ProfileStatistic(ResultSet resultSet) throws SQLException {
         this.followers = resultSet.getInt(Column.followers);
         this.subscribes = resultSet.getInt(Column.subscribes);
-        this.files = resultSet.getInt(Column.files_number);
+        this.post_number = resultSet.getInt(Column.post_number);
     }
 
 }

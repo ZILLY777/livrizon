@@ -1,5 +1,6 @@
 package com.server.founder.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.server.founder.sql.Column;
 import com.server.founder.sql.TableName;
 import lombok.Data;
@@ -8,7 +9,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
 @Data
+@JsonInclude(NON_NULL)
 public class UserInformation {
     UserProfile profile;
     ProfileStatistic statistic;
