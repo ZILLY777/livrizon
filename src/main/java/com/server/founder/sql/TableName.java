@@ -23,5 +23,6 @@ public class TableName {
     public static String login= "login";
     public static String user_poll= "user_poll";
     public static String subscribes="subscribes";
+    public static String subtwo= "subtwo";
     public static String loginStatement="login_";
 }

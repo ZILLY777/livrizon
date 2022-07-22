@@ -372,7 +372,7 @@ public class Statement {
 
     public  static String getHandshakeFirstGen(Object last){
         return "SELECT subscribes.subscribe_id, founder.users.user_id, founder.users.first_name, founder.users.last_name, founder.users.confirm, \n" +
-                "user_avatar.url, exists(SELECT * from founder.subscribes where founder.subscribes.user_id=3 and founder.subscribes.user_id=sub.sub_id ) AS my_sub\n" +
+                "user_avatar.url, exists(SELECT NSUB.user_id from founder.subscribes as NSUB where NSUB.user_id=subscribes.user_id and subscribes.sub_id=NSUB.sub_id ) AS my_sub\n" +
                 "from founder.subscribes\n" +
                 "INNER JOIN founder.subscribes AS sub\n" +
                 "ON sub.user_id=founder.subscribes.sub_id\n" +
@@ -381,23 +381,27 @@ public class Statement {
                 selectUserAvatar()+
                 "WHERE founder.subscribes.user_id=? AND sub.sub_id=subscribes.user_id \n" +
                 andFindByLess(Column.subscribe_id,last)+
+                "GROUP by founder.users.user_id\n"+
                 orderByDesc(Column.subscribe_id)+
                 limit(25);
     }
     public  static String getHandshakeSecondGen(Object last){
-        return "SELECT founder.users.user_id, founder.users.first_name, founder.users.last_name, founder.users.confirm, subscribes.subscribe_id,user_avatar.url\n" +
+        return "SELECT subtwo.subscribe_id, founder.users.user_id, founder.users.first_name, founder.users.last_name, founder.users.confirm, \n" +
+                "user_avatar.url, exists(SELECT NSUB.user_id from founder.subscribes as NSUB where NSUB.user_id=founder.subscribes.user_id and subtwo.sub_id=NSUB.sub_id ) AS my_sub\n" +
                 "from founder.subscribes\n" +
                 "INNER JOIN founder.subscribes AS sub\n" +
                 "ON sub.user_id=founder.subscribes.sub_id\n" +
+                "INNER JOIN founder.subscribes AS subtwo\n" +
+                "ON subtwo.user_id =sub.user_id\n" +
+                "INNER JOIN founder.subscribes AS subthree\n" +
+                "ON subthree.sub_id=subtwo.user_id AND subthree.user_id=subtwo.sub_id \n" +
                 "INNER JOIN founder.users\n" +
-                "ON founder.users.user_id=sub.sub_id\n" +
+                "ON users.user_id=subtwo.sub_id\n" +
                 selectUserAvatar()+
-                "WHERE founder.subscribes.user_id=? AND sub.sub_id!=subscribes.user_id\n" +
-                "GROUP by founder.users.user_id\n" +
-                ///"ORDER BY users.user_id\n" +
-                ///"WHERE founder.subscribes.user_id=?\n"+
-                andFindByLess(Column.subscribe_id,last)+
-                orderByDesc(Column.subscribe_id)+
+                "WHERE founder.subscribes.user_id=? AND sub.sub_id=subscribes.user_id and subtwo.sub_id!=subscribes.user_id\n"+
+                andFindByLess(Function.concat(TableName.subtwo,Column.subscribe_id),last)+
+                "GROUP by founder.users.user_id\n"+
+                orderByDesc(Function.concat(TableName.subtwo,Column.subscribe_id))+
                 limit(25);
     }
     public static String selectPublicChatAvatar(){

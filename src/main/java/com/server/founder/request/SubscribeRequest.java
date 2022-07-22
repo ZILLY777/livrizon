@@ -140,7 +140,12 @@ public class SubscribeRequest {
         int owner_id=JwtUtil.extractId(auth);
             try {
                 Connection connection = Function.connect();
-                PreparedStatement getHandShake=connection.prepareStatement(Statement.getHandshakeFirstGen(last));
+
+                PreparedStatement getHandShake=connection.prepareStatement(switch(generation){
+                    case 1 -> Statement.getHandshakeFirstGen(last);
+                    case 2 -> Statement.getHandshakeSecondGen(last);
+                    default -> "pohui";
+                });
                 getHandShake.setInt(1,owner_id);
                 if(last!=null) getHandShake.setObject(2,last);
                 System.out.println(getHandShake);
