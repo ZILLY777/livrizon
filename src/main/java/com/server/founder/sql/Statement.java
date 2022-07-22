@@ -371,17 +371,15 @@ public class Statement {
     }
 
     public  static String getHandshakeFirstGen(Object last){
-        return "SELECT founder.users.user_id, founder.users.first_name, founder.users.last_name, founder.users.confirm, subscribes.subscribe_id,user_avatar.url,  exists(SELECT * from founder.subscribes where founder.subscribes.user_id=3 and founder.subscribes.sub_id=sub.sub_id ) AS sub_status\n" +
+        return "SELECT subscribes.subscribe_id, founder.users.user_id, founder.users.first_name, founder.users.last_name, founder.users.confirm, \n" +
+                "user_avatar.url, exists(SELECT * from founder.subscribes where founder.subscribes.user_id=3 and founder.subscribes.user_id=sub.sub_id ) AS my_sub\n" +
                 "from founder.subscribes\n" +
                 "INNER JOIN founder.subscribes AS sub\n" +
                 "ON sub.user_id=founder.subscribes.sub_id\n" +
                 "INNER JOIN founder.users\n" +
-                "ON founder.users.user_id=sub.sub_id\n" +
+                "ON users.user_id=subscribes.sub_id\n" +
                 selectUserAvatar()+
-                "WHERE founder.subscribes.user_id=? AND sub.sub_id!=subscribes.user_id\n" +
-                "GROUP by founder.users.user_id\n" +
-                ///"ORDER BY users.user_id\n" +
-                ///"WHERE founder.subscribes.user_id=?\n"+
+                "WHERE founder.subscribes.user_id=? AND sub.sub_id=subscribes.user_id \n" +
                 andFindByLess(Column.subscribe_id,last)+
                 orderByDesc(Column.subscribe_id)+
                 limit(25);
@@ -636,7 +634,7 @@ public class Statement {
             "(select count(post_likes.user_post_id) from post_likes where post_likes.user_post_id=user_posts.user_post_id and post_likes.user_id=?) as my_like\n" +
             "FROM user_posts where user_posts.user_post_id=?";
     public static String selectSub(String column1,String column2){
-        return "SELECT subscribes.subscribe_id,users.user_id,users.first_name,users.last_name,user_avatar.url,users.confirm FROM subscribes\n" +
+        return "SELECT subscribes.subscribe_id,users.user_id,users.first_name,users.last_name,user_avatar.url,users.confirm,() FROM subscribes\n" +
                 "inner join users on(subscribes."+column1+"=users.user_id)\n" +
                 selectUserAvatar()+
                 "where subscribes."+column2+"=?\n";

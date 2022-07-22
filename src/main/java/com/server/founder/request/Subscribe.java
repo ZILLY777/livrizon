@@ -12,6 +12,7 @@ import java.sql.SQLException;
 public class Subscribe {
     int subscribe_id;
     UserProfile userProfile;
+    boolean my_sub;
 
     public Subscribe() {
     }
@@ -19,5 +20,6 @@ public class Subscribe {
     public Subscribe(ResultSet resultSet) throws SQLException {
         this.subscribe_id = resultSet.getInt(Column.subscribe_id);
         this.userProfile = new UserProfile(resultSet, TableName.users,TableName.user_avatar);
+        this.my_sub = resultSet.getBoolean(Column.my_sub);
     }
 }

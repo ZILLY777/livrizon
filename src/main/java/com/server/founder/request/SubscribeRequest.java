@@ -140,34 +140,22 @@ public class SubscribeRequest {
         int owner_id=JwtUtil.extractId(auth);
             try {
                 Connection connection = Function.connect();
-                switch (generation){
-                    case 1:
-                        PreparedStatement getHandShake=connection.prepareStatement(Statement.getHandshakeFirstGen(last));
-                        getHandShake.setInt(1,owner_id);
-                        if(last!=null) getHandShake.setObject(2,last);
-                        ResultSet resultSet=getHandShake.executeQuery();
-                        List<Subscribe> list=new ArrayList<>();
-                        while (resultSet.next()){
-                            list.add(new Subscribe(resultSet));
-                        }
-                        connection.close();
-                        return ResponseEntity.ok().body(list);
-                    case 2:
-                        PreparedStatement getHandShakeS=connection.prepareStatement(Statement.getHandshakeSecondGen(last));
-                        getHandShakeS.setInt(1,owner_id);
-                        if(last!=null) getHandShakeS.setObject(2,last);
-                        ResultSet resultSecondSet=getHandShakeS.executeQuery();
-                        List<Subscribe> listSecond=new ArrayList<>();
-                        while (resultSecondSet.next()){
-                            listSecond.add(new Subscribe(resultSecondSet));
-                        }
-                        connection.close();
-                        return ResponseEntity.ok().body(listSecond);
+                PreparedStatement getHandShake=connection.prepareStatement(Statement.getHandshakeFirstGen(last));
+                getHandShake.setInt(1,owner_id);
+                if(last!=null) getHandShake.setObject(2,last);
+                System.out.println(getHandShake);
+                ResultSet resultSet=getHandShake.executeQuery();
+                List<Subscribe> list=new ArrayList<>();
+                while (resultSet.next()){
+                    list.add(new Subscribe(resultSet));
                 }
+                connection.close();
+                response = ResponseEntity.ok().body(list);
             } catch (SQLException e) {
                 System.out.println(e);
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
-            }return null;
+            }
+            return response;
 
     }
 
