@@ -404,6 +404,32 @@ public class Statement {
                 orderByDesc(Function.concat(TableName.subtwo,Column.subscribe_id))+
                 limit(25);
     }
+
+
+
+    public  static String getHandshakeThirdGen(Object last){
+        return "SELECT subfive.subscribe_id, users.user_id, founder.users.first_name, founder.users.last_name, founder.users.confirm, \n" +
+                "user_avatar.url, exists(SELECT subscribes.user_id from founder.subscribes as NSUB where NSUB.user_id=founder.subscribes.user_id and subfour.sub_id=NSUB.sub_id ) AS my_sub\n" +
+                "from founder.subscribes\n" +
+                "INNER JOIN founder.subscribes AS sub\n" +
+                "ON sub.user_id=founder.subscribes.sub_id\n" +
+                "INNER JOIN founder.subscribes AS subtwo\n" +
+                "ON subtwo.user_id =sub.user_id\n" +
+                "INNER JOIN founder.subscribes AS subthree\n" +
+                "ON subthree.sub_id=subtwo.user_id AND subthree.user_id=subtwo.sub_id \n" +
+                "INNER JOIN founder.subscribes as subfour\n" +
+                "ON subfour.user_id=subthree.user_id \n" +
+                "INNER JOIN founder.subscribes AS subfive\n" +
+                "ON subfive.user_id=subfour.sub_id AND subfive.sub_id=subfour.user_id\n" +
+                "INNER JOIN founder.users\n" +
+                "ON users.user_id=subfour.sub_id\n" +
+                selectUserAvatar()+
+                "WHERE founder.subscribes.user_id=? AND sub.sub_id=subscribes.user_id and subtwo.sub_id!=subscribes.user_id and subfive.user_id !=subthree.sub_id\n"+
+                andFindByLess(Function.concat(TableName.subtwo,Column.subscribe_id),last)+
+                "GROUP by founder.users.user_id\n"+
+                orderByDesc(Function.concat(TableName.subtwo,Column.subscribe_id))+
+                limit(25);
+    }
     public static String selectPublicChatAvatar(){
         return "left join files as public_avatar on(\n" +
                 "\t(\n" +

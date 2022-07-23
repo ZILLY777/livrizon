@@ -144,6 +144,7 @@ public class SubscribeRequest {
                 PreparedStatement getHandShake=connection.prepareStatement(switch(generation){
                     case 1 -> Statement.getHandshakeFirstGen(last);
                     case 2 -> Statement.getHandshakeSecondGen(last);
+                    case 3 -> Statement.getHandshakeThirdGen(last);
                     default -> "pohui";
                 });
                 getHandShake.setInt(1,owner_id);
