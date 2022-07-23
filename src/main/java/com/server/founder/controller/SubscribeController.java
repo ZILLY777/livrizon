@@ -40,8 +40,8 @@ public class SubscribeController {
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
 
-    @GetMapping("/sub/handshakes/{generation}")
-    ResponseEntity<?> listOf_sub_handshakes(@RequestHeader String auth,@PathVariable  int generation, @RequestParam(required = false) String last){
+    @GetMapping("/sub/handshakes")
+    ResponseEntity<?> listOf_sub_handshakes(@RequestHeader String auth,@PathVariable int generation, @RequestParam(required = false) String last){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
         if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getHandshakesSubscribe(auth, generation, last);
         return ResponseEntity.badRequest().body(new Response(tokenState));

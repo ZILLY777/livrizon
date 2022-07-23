@@ -376,30 +376,26 @@ public class Statement {
                 "user_avatar.url, exists(SELECT NSUB.user_id from founder.subscribes as NSUB where NSUB.user_id=subscribes.user_id and subscribes.sub_id=NSUB.sub_id ) AS my_sub\n" +
                 "from founder.subscribes\n" +
                 "INNER JOIN founder.subscribes AS sub\n" +
-                "ON sub.user_id=founder.subscribes.sub_id\n" +
+                "ON (sub.user_id=subscribes.sub_id AND sub.sub_id=subscribes.user_id)\n" +
                 "INNER JOIN founder.users\n" +
                 "ON users.user_id=subscribes.sub_id\n" +
                 selectUserAvatar()+
-                "WHERE founder.subscribes.user_id=? AND sub.sub_id=subscribes.user_id \n" +
+                "WHERE founder.subscribes.user_id=? \n" +
                 andFindByLess(Column.subscribe_id,last)+
                 "GROUP by founder.users.user_id\n"+
                 orderByDesc(Column.subscribe_id)+
                 limit(25);
     }
     public  static String getHandshakeSecondGen(Object last){
-        return "SELECT subtwo.subscribe_id, founder.users.user_id, founder.users.first_name, founder.users.last_name, founder.users.confirm, \n" +
-                "user_avatar.url, exists(SELECT NSUB.user_id from founder.subscribes as NSUB where NSUB.user_id=founder.subscribes.user_id and subtwo.sub_id=NSUB.sub_id ) AS my_sub\n" +
-                "from founder.subscribes\n" +
-                "INNER JOIN founder.subscribes AS sub\n" +
-                "ON sub.user_id=founder.subscribes.sub_id\n" +
-                "INNER JOIN founder.subscribes AS subtwo\n" +
-                "ON subtwo.user_id =sub.user_id\n" +
-                "INNER JOIN founder.subscribes AS subthree\n" +
-                "ON subthree.sub_id=subtwo.user_id AND subthree.user_id=subtwo.sub_id \n" +
-                "INNER JOIN founder.users\n" +
-                "ON users.user_id=subtwo.sub_id\n" +
+        return "select subtwo.subscribe_id,users.user_id,users.first_name,users.last_name,users.confirm,user_avatar.url,\n" +
+                "exists(SELECT NSUB.user_id from founder.subscribes as NSUB where NSUB.user_id=founder.subscribes.user_id and subtwo.sub_id=NSUB.sub_id ) AS my_sub\n" +
+                "from subscribes\n" +
+                "inner join subscribes as sub on(sub.user_id=subscribes.sub_id and sub.sub_id=subscribes.user_id)\n" +
+                "inner join subscribes as subtwo on(subscribes.sub_id=subtwo.user_id)\n" +
+                "inner join subscribes as subthree on(subthree.user_id=subtwo.sub_id and subthree.sub_id=subtwo.user_id)\n" +
+                "inner join users on (subtwo.sub_id=users.user_id)\n"+
                 selectUserAvatar()+
-                "WHERE founder.subscribes.user_id=? AND sub.sub_id=subscribes.user_id and subtwo.sub_id!=subscribes.user_id\n"+
+                "where subscribes.user_id=? and subtwo.sub_id!=subscribes.user_id\n"+
                 andFindByLess(Function.concat(TableName.subtwo,Column.subscribe_id),last)+
                 "GROUP by founder.users.user_id\n"+
                 orderByDesc(Function.concat(TableName.subtwo,Column.subscribe_id))+
@@ -409,26 +405,20 @@ public class Statement {
 
 
     public  static String getHandshakeThirdGen(Object last){
-        return "SELECT subfive.subscribe_id, users.user_id, founder.users.first_name, founder.users.last_name, founder.users.confirm, \n" +
-                "user_avatar.url, exists(SELECT subscribes.user_id from founder.subscribes as NSUB where NSUB.user_id=founder.subscribes.user_id and subfour.sub_id=NSUB.sub_id ) AS my_sub\n" +
-                "from founder.subscribes\n" +
-                "INNER JOIN founder.subscribes AS sub\n" +
-                "ON sub.user_id=founder.subscribes.sub_id\n" +
-                "INNER JOIN founder.subscribes AS subtwo\n" +
-                "ON subtwo.user_id =sub.user_id\n" +
-                "INNER JOIN founder.subscribes AS subthree\n" +
-                "ON subthree.sub_id=subtwo.user_id AND subthree.user_id=subtwo.sub_id \n" +
-                "INNER JOIN founder.subscribes as subfour\n" +
-                "ON subfour.user_id=subthree.user_id \n" +
-                "INNER JOIN founder.subscribes AS subfive\n" +
-                "ON subfive.user_id=subfour.sub_id AND subfive.sub_id=subfour.user_id\n" +
-                "INNER JOIN founder.users\n" +
-                "ON users.user_id=subfour.sub_id\n" +
+        return "select subfour.subscribe_id,users.user_id,users.first_name,users.last_name,users.confirm,user_avatar.url,\n" +
+                "exists(SELECT NSUB.user_id from founder.subscribes as NSUB where NSUB.user_id=founder.subscribes.user_id and subfour.sub_id=NSUB.sub_id ) AS my_sub\n" +
+                "from subscribes\n" +
+                "inner join subscribes as sub on(sub.user_id=subscribes.sub_id and sub.sub_id=subscribes.user_id)\n" +
+                "inner join subscribes as subtwo on(subscribes.sub_id=subtwo.user_id)\n" +
+                "inner join subscribes as subthree on(subthree.user_id=subtwo.sub_id and subthree.sub_id=subtwo.user_id)\n" +
+                "inner join subscribes as subfour on(subtwo.sub_id=subfour.user_id)\n" +
+                "inner join subscribes as subfive on(subfive.user_id=subfour.sub_id and subfive.sub_id=subfour.user_id)\n" +
+                "inner join users on(subfour.sub_id=users.user_id)\n" +
                 selectUserAvatar()+
-                "WHERE founder.subscribes.user_id=? AND sub.sub_id=subscribes.user_id and subtwo.sub_id!=subscribes.user_id and subfive.user_id !=subthree.sub_id\n"+
-                andFindByLess(Function.concat(TableName.subtwo,Column.subscribe_id),last)+
-                "GROUP by founder.users.user_id\n"+
-                orderByDesc(Function.concat(TableName.subtwo,Column.subscribe_id))+
+                "where subscribes.user_id=? and subfour.sub_id!=subscribes.sub_id\n" +
+                andFindByLess(Function.concat(TableName.subfour,Column.subscribe_id),last)+
+                "GROUP by users.user_id\n"+
+                orderByDesc(Function.concat(TableName.subfour,Column.subscribe_id))+
                 limit(25);
     }
     public static String selectPublicChatAvatar(){

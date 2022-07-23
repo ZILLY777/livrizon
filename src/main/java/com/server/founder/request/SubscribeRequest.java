@@ -5,6 +5,7 @@ import com.server.founder.model.*;
 import com.server.founder.security.JwtUtil;
 import com.server.founder.sql.Column;
 import com.server.founder.sql.Statement;
+import com.server.founder.sql.TableName;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.sql.Connection;
@@ -145,12 +146,10 @@ public class SubscribeRequest {
                 PreparedStatement getHandShake=connection.prepareStatement(switch(generation){
                     case 1 -> Statement.getHandshakeFirstGen(last);
                     case 2 -> Statement.getHandshakeSecondGen(last);
-                    case 3 -> Statement.getHandshakeThirdGen(last);
-                    default -> "pohui";
+                    default -> Statement.getHandshakeThirdGen(last);
                 });
                 getHandShake.setInt(1,owner_id);
                 if(last!=null) getHandShake.setObject(2,last);
-                System.out.println(getHandShake);
                 ResultSet resultSet=getHandShake.executeQuery();
                 List<Subscribe> list=new ArrayList<>();
                 while (resultSet.next()){
