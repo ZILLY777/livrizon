@@ -356,17 +356,18 @@ public class Statement {
                 "\t)="+tableName+".file_id\n" +
                 ")\n";
     }
-    public  static String getSubOfSub(Object last){
-        return "SELECT subscribe_id,users.user_id,first_name, last_name,user_avatar.url,users.confirm\n" +
+    public  static String getMutualConnection(Object last){
+        return "SELECT subscribes.subscribe_id,users.user_id,first_name, last_name,user_avatar.url,users.confirm\n" +
                 "FROM founder.subscribes\n" +
                 "INNER join(SELECT sub_id FROM founder.subscribes WHERE user_id=?) AS SUB\n" +
                 "ON SUB.sub_id=founder.subscribes.sub_id\n" +
                 "INNER JOIN founder.users\n" +
                 "ON users.user_id = subscribes.sub_id\n" +
+                "INNER JOIN subscribes as connection on(subscribes.sub_id=connection.user_id and subscribes.user_id=connection.sub_id)\n"+
                 selectUserAvatar()+
                 "WHERE founder.subscribes.user_id=?\n"+
                 andFindByLess(Column.subscribe_id,last)+
-                orderByDesc(Column.subscribe_id)+
+                orderByDesc(Function.concat(TableName.subscribes,Column.subscribe_id))+
                 limit(25);
     }
 
@@ -663,11 +664,14 @@ public class Statement {
     public static String checkPostLike="SELECT user_posts.status,user_posts.user_id,\n" +
             "(select count(post_likes.user_post_id) from post_likes where post_likes.user_post_id=user_posts.user_post_id and post_likes.user_id=?) as my_like\n" +
             "FROM user_posts where user_posts.user_post_id=?";
-    public static String selectSub(String column1,String column2){
-        return "SELECT subscribes.subscribe_id,users.user_id,users.first_name,users.last_name,user_avatar.url,users.confirm,() FROM subscribes\n" +
+    public static String selectSub(String column1,String column2,boolean my_sub){
+        String str="SELECT subscribes.subscribe_id,users.user_id,users.first_name,users.last_name,user_avatar.url,users.confirm\n";
+        if(my_sub) str+=",(select count(sub.sub_id) from subscribes as sub where subscribes.sub_id=sub.sub_id and sub.user_id=?) as my_sub\n";
+        str+="FROM subscribes\n" +
                 "inner join users on(subscribes."+column1+"=users.user_id)\n" +
                 selectUserAvatar()+
                 "where subscribes."+column2+"=?\n";
+        return str;
     }
     public static String selectPostFiles = "select post_files.post_file_id,files.url,files.contentType,files.size\n"+
             "from post_files \n" +

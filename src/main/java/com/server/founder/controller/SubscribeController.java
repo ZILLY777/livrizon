@@ -22,17 +22,21 @@ public class SubscribeController {
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
     @GetMapping("/follower/{user_id}")
-    ResponseEntity<?> listOfFollower(@PathVariable int user_id,@RequestParam(required = false) String last){
-        return SubscribeRequest.getSubscribe(user_id, Column.user_id,Column.sub_id,last);
+    ResponseEntity<?> listOfFollower(@RequestHeader(required = false) String auth,@PathVariable int user_id,@RequestParam(required = false) String last){
+        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.PERMIT_ALL);
+        if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getSubscribe(auth,user_id, Column.user_id,Column.sub_id,last);
+        return ResponseEntity.badRequest().body(new Response(tokenState));
     }
     @GetMapping("/sub/{user_id}")
-    ResponseEntity<?> listOfUsers(@PathVariable int user_id,@RequestParam(required = false) String last){
-        return SubscribeRequest.getSubscribe(user_id, Column.sub_id,Column.user_id,last);
+    ResponseEntity<?> listOfUsers(@RequestHeader(required = false) String auth,@PathVariable int user_id,@RequestParam(required = false) String last){
+        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.PERMIT_ALL);
+        if(tokenState == ResponseState.ACCESS) return  SubscribeRequest.getSubscribe(auth,user_id, Column.sub_id,Column.user_id,last);
+        return ResponseEntity.badRequest().body(new Response(tokenState));
     }
-    @GetMapping("/sub/subscribes/{user_id}")
+    @GetMapping("/connection/mutual/{user_id}")
     ResponseEntity<?> listOf_sub_subscribes(@RequestHeader String auth,@PathVariable int user_id,@RequestParam(required = false) String last){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-        if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getMutualSubscribe(auth,user_id,last);
+        if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getMutualConnection(auth,user_id,last);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
 

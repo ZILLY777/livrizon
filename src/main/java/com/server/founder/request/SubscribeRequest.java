@@ -23,16 +23,16 @@ public class SubscribeRequest {
                 case 2 -> Statement.orderByDesc(Column.subscribe_id);
                 default -> Statement.orderBy(Column.subscribe_id);
             };
-            PreparedStatement selectSub=connection.prepareStatement(Statement.selectSub(Column.sub_id,Column.user_id)+
+            PreparedStatement selectSub=connection.prepareStatement(Statement.selectSub(Column.sub_id,Column.user_id,false)+
                     sorting+
                     Statement.rangeLimit(next,15)
             );
             selectSub.setInt(1,JwtUtil.extractId(auth));
             if(next!=null) selectSub.setInt(2, Integer.parseInt(next));
             ResultSet resultSet=selectSub.executeQuery();
-            List<Subscribe> list=new ArrayList<>();
+            List<MySubscribe> list=new ArrayList<>();
             while (resultSet.next()){
-                list.add(new Subscribe(resultSet));
+                list.add(new MySubscribe(resultSet));
             }
             connection.close();
             return ResponseEntity.ok().body(list);
@@ -40,15 +40,16 @@ public class SubscribeRequest {
             return ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
     }
-    public static ResponseEntity<?> getSubscribe(int user_id,String column1,String column2,String last){
+    public static ResponseEntity<?> getSubscribe(String auth,int user_id,String column1,String column2,String last){
         try {
             Connection connection=Function.connect();
-            PreparedStatement selectSub=connection.prepareStatement(Statement.selectSub(column1,column2)+
+            PreparedStatement selectSub=connection.prepareStatement(Statement.selectSub(column1,column2,true)+
                     Statement.andFindByLess(Column.subscribe_id,last)+
                     Statement.orderByDesc(Column.subscribe_id)
             );
-            selectSub.setInt(1,user_id);
-            if(last!=null) selectSub.setObject(2,last);
+            selectSub.setObject(1,JwtUtil.extractIdOrNull(auth));
+            selectSub.setInt(2,user_id);
+            if(last!=null) selectSub.setObject(3,last);
             ResultSet resultSet=selectSub.executeQuery();
             List<Subscribe> list=new ArrayList<>();
             while (resultSet.next()){
@@ -57,6 +58,7 @@ public class SubscribeRequest {
             connection.close();
             return ResponseEntity.ok().body(list);
         } catch (SQLException e){
+            System.out.println(e);
             return ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
     }
@@ -109,25 +111,24 @@ public class SubscribeRequest {
         else response = ResponseEntity.badRequest().body(new Response(ResponseState.YOURSELF_SUBSCRIBE));
         return response;
     }
-    public static ResponseEntity<?> getMutualSubscribe(String auth, int user_id, Object last){
+    public static ResponseEntity<?> getMutualConnection(String auth, int user_id, Object last){
         ResponseEntity<?> response;
         int owner_id=JwtUtil.extractId(auth);
         if (owner_id!=user_id){
             try {
-                Connection connection = Function.connect(); ///передаем переменной коннект права подключения вызвав класс Function и connect С перелданными методами
-                PreparedStatement getSubOfSub=connection.prepareStatement(Statement.getSubOfSub(last));///понятно что даем sub права на устонавку вопросиков
+                Connection connection = Function.connect();///передаем переменной коннект права подключения вызвав класс Function и connect С перелданными методами
+                PreparedStatement getSubOfSub=connection.prepareStatement(Statement.getMutualConnection(last));///понятно что даем sub права на устонавку вопросиков
                 getSubOfSub.setInt(1,user_id);
                 getSubOfSub.setInt(2,owner_id);
                 if(last!=null) getSubOfSub.setObject(3,last);///откуда там 3ий парметр в Statement.java
                 ResultSet resultSet=getSubOfSub.executeQuery();
-                List<Subscribe> list=new ArrayList<>();
+                List<MySubscribe> list=new ArrayList<>();
                 while (resultSet.next()){
-                    list.add(new Subscribe(resultSet));
+                    list.add(new MySubscribe(resultSet));
                 }
                 connection.close();
                 return ResponseEntity.ok().body(list);
             } catch (SQLException e) {
-                System.out.println(e);
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
             }
 
