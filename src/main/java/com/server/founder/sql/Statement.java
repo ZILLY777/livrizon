@@ -414,7 +414,7 @@ public class Statement {
                 "inner join subscribes as subfive on(subfive.user_id=subfour.sub_id and subfive.sub_id=subfour.user_id)\n" +
                 "inner join users on(subfour.sub_id=users.user_id)\n" +
                 selectUserAvatar()+
-                "where subscribes.user_id=? and subfour.user_id!=subscribes.user_id and subtwo.user_id!=subfour.sub_id\n" +
+                "where subscribes.user_id=? and subscribes.user_id!=subtwo.sub_id and subscribes.sub_id!=subfour.sub_id and subscribes.user_id!=subfour.sub_id\n" +
                 andFindByLess(Function.concat(TableName.subfour,Column.subscribe_id),last)+
                 "GROUP by users.user_id\n"+
                 orderByDesc(Function.concat(TableName.subfour,Column.subscribe_id))+
