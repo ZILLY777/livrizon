@@ -5,9 +5,8 @@ import com.server.founder.model.*;
 import com.server.founder.security.JwtUtil;
 import com.server.founder.sql.Column;
 import com.server.founder.sql.Statement;
-import com.server.founder.sql.TableName;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -91,16 +90,16 @@ public class SubscribeRequest {
         }
         else return ResponseState.NOT_EXIST;
     }
-    public static ResponseEntity<?> subscribe(String auth,int sub_id) {
+    public static ResponseEntity<?> subscribe(String auth,int user_id) {
         ResponseEntity<?> response;
-        int user_id=JwtUtil.extractId(auth);
-        if(user_id!=sub_id) {
+        int owner_id=JwtUtil.extractId(auth);
+        if(owner_id!=user_id) {
             try {
                 Connection connection = Function.connect();
-                ResponseState status = checkSubscribe(user_id, sub_id, connection);
+                ResponseState status = checkSubscribe(owner_id, user_id, connection);
                 if (status == ResponseState.EXIST) {
-                    Request.saveUserConnect(JwtUtil.extractId(auth), sub_id, connection);
-                    subscribe(user_id, sub_id, connection);
+                    Request.saveUserConnect(JwtUtil.extractId(auth), user_id, connection);
+                    subscribe(owner_id, user_id, connection);
                     response = ResponseEntity.ok().body(new Response(ResponseState.SUCCESS));
                 }
                 else response = ResponseEntity.badRequest().body(new Response(status));
@@ -109,8 +108,39 @@ public class SubscribeRequest {
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
             }
         }
-        else response = ResponseEntity.badRequest().body(new Response(ResponseState.YOURSELF_SUBSCRIBE));
+        else response = ResponseEntity.badRequest().body(new Response(ResponseState.YOURSELF));
         return response;
+    }
+    public static ResponseEntity<?> getRelationWithUser(String auth,int user_id){
+        ResponseEntity<?> response;
+        int owner_id=JwtUtil.extractId(auth);
+        if(owner_id!=user_id){
+            try {
+                Connection connection=Function.connect();
+                PreparedStatement getRelationWithUser=connection.prepareStatement(Statement.getRelationWithUser);
+                getRelationWithUser.setInt(1,user_id);
+                getRelationWithUser.setInt(2,user_id);
+                getRelationWithUser.setInt(3,user_id);
+                getRelationWithUser.setInt(4,user_id);
+                getRelationWithUser.setInt(5,user_id);
+                getRelationWithUser.setInt(6,user_id);
+                getRelationWithUser.setInt(7,user_id);
+                getRelationWithUser.setInt(8,owner_id);
+                getRelationWithUser.setInt(9,user_id);
+                getRelationWithUser.setInt(10,user_id);
+                getRelationWithUser.setInt(11,user_id);
+                ResultSet resultSet=getRelationWithUser.executeQuery();
+                if(resultSet.next()) response=ResponseEntity.ok().body(new Relation(resultSet));
+                else response = ResponseEntity.badRequest().body(new Response(ResponseState.NOT_EXIST));
+                connection.close();
+            } catch (SQLException e){
+                response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
+            }
+        }
+        else response = ResponseEntity.badRequest().body(new Response(ResponseState.YOURSELF));
+        return response;
+
+
     }
     public static ResponseEntity<?> getMutualConnection(String auth, int user_id, Object last){
         ResponseEntity<?> response;
@@ -127,17 +157,17 @@ public class SubscribeRequest {
                 while (resultSet.next()){
                     list.add(new MySubscribe(resultSet));
                 }
+                response = ResponseEntity.ok().body(list);
                 connection.close();
-                return ResponseEntity.ok().body(list);
             } catch (SQLException e) {
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
             }
 
-        }else response = ResponseEntity.badRequest().body(new Response(ResponseState.YOURSELF_SUBSCRIBE));
+        }else response = ResponseEntity.badRequest().body(new Response(ResponseState.YOURSELF));
         return response;
     }
 
-    public static ResponseEntity<?> getHandshakesSubscribe(String auth, int generation, Object last){
+    public static ResponseEntity<?> getHandshakes(String auth, int generation, Object last){
         ResponseEntity<?> response;
         int owner_id=JwtUtil.extractId(auth);
             try {
@@ -150,7 +180,6 @@ public class SubscribeRequest {
                 });
                 getHandShake.setInt(1,owner_id);
                 if(last!=null) getHandShake.setObject(2,last);
-                System.out.println(getHandShake);
                 ResultSet resultSet=getHandShake.executeQuery();
                 List<Subscribe> list=new ArrayList<>();
                 while (resultSet.next()){
@@ -159,7 +188,6 @@ public class SubscribeRequest {
                 connection.close();
                 response = ResponseEntity.ok().body(list);
             } catch (SQLException e) {
-                System.out.println(e);
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
             }
             return response;

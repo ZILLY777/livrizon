@@ -12,10 +12,7 @@ import com.server.founder.sql.Column;
 import com.server.founder.sql.Statement;
 import com.server.founder.sql.TableName;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class OwnerController {
@@ -53,6 +50,24 @@ public class OwnerController {
     ResponseEntity<?> getChatUsers(@RequestHeader String auth,@RequestParam(required = false) String next){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
         if(tokenState == ResponseState.ACCESS) return ChatRequest.getUserChats(auth,next);
+        return ResponseEntity.badRequest().body(new Response(tokenState));
+    }
+    @GetMapping("/connection/mutual/{user_id}")
+    ResponseEntity<?> getMutualConnection(@RequestHeader String auth, @PathVariable int user_id, @RequestParam(required = false) String last){
+        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
+        if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getMutualConnection(auth,user_id,last);
+        return ResponseEntity.badRequest().body(new Response(tokenState));
+    }
+    @GetMapping("/handshakes/{generation}")
+    ResponseEntity<?> getHandshakesSubscribe(@RequestHeader String auth,@PathVariable int generation, @RequestParam(required = false) String last){
+        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
+        if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getHandshakes(auth, generation, last);
+        return ResponseEntity.badRequest().body(new Response(tokenState));
+    }
+    @GetMapping("/relation/{user_id}")
+    ResponseEntity<?> getRelationWithUser(@RequestHeader String auth,@PathVariable int user_id){
+        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
+        if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getRelationWithUser(auth,user_id);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
 }

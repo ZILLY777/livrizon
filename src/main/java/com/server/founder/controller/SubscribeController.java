@@ -33,16 +33,4 @@ public class SubscribeController {
         if(tokenState == ResponseState.ACCESS) return  SubscribeRequest.getSubscribe(auth,user_id, Column.sub_id,Column.user_id,last);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
-    @GetMapping("/connection/mutual/{user_id}")
-    ResponseEntity<?> listOf_sub_subscribes(@RequestHeader String auth,@PathVariable int user_id,@RequestParam(required = false) String last){
-        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-        if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getMutualConnection(auth,user_id,last);
-        return ResponseEntity.badRequest().body(new Response(tokenState));
-    }
-    @GetMapping("/sub/handshakes/{generation}")
-    ResponseEntity<?> listOf_sub_handshakes(@RequestHeader String auth,@PathVariable int generation, @RequestParam(required = false) String last){
-        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-        if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getHandshakesSubscribe(auth, generation, last);
-        return ResponseEntity.badRequest().body(new Response(tokenState));
-    }
 }

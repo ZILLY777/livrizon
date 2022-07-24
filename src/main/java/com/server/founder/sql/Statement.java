@@ -401,9 +401,6 @@ public class Statement {
                 orderByDesc(Function.concat(TableName.subtwo,Column.subscribe_id))+
                 limit(25);
     }
-
-
-
     public  static String getHandshakeThirdGen(Object last){
         return "select subfour.subscribe_id,users.user_id,users.first_name,users.last_name,users.confirm,user_avatar.url,exists(SELECT NSUB.user_id from founder.subscribes as NSUB where NSUB.user_id=founder.subscribes.user_id and subfour.sub_id=NSUB.sub_id ) AS my_sub\n" +
                 "from subscribes\n" +
@@ -420,6 +417,28 @@ public class Statement {
                 orderByDesc(Function.concat(TableName.subfour,Column.subscribe_id))+
                 limit(25);
     }
+    public static String getRelationWithUser="select\n" +
+            "(\n" +
+            "\tCASE\n" +
+            "\t\tWHEN subscribes.sub_id=? THEN 1\n" +
+            "\t\tWHEN subone.sub_id=? THEN 2\n" +
+            "\t\tWHEN subtwo.sub_id=? THEN 3\n" +
+            "\t\tELSE 0\n" +
+            "\tEND\n" +
+            ") as gen,count(subscribes.user_id) as number,\n" +
+            "(select count(sub.sub_id) from subscribes as sub where sub.user_id=subscribes.user_id and sub.sub_id=?) as my_sub,\n" +
+            "(select count(sub.subscribe_id) from subscribes as sub where sub.user_id=? and sub.sub_id=subscribes.user_id) as it_sub\n" +
+            "from subscribes\n" +
+            "left join subscribes as subone on(subscribes.sub_id=subone.user_id and subscribes.user_id!=subone.sub_id and subscribes.sub_id!=?)\n" +
+            "left join subscribes as subtwo on(subone.sub_id=subtwo.user_id and subscribes.user_id!=subtwo.sub_id and subscribes.sub_id!=subtwo.sub_id and subone.sub_id!=?)\n" +
+            "where subscribes.user_id=? and \n" +
+            "(select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=subscribes.user_id) and\n" +
+            "(subone.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subone.sub_id and nsub.sub_id=subone.user_id)) and\n" +
+            "(subone.sub_id is null or subtwo.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subtwo.sub_id and nsub.sub_id=subtwo.user_id)) and\n" +
+            "(subscribes.sub_id=? or subone.sub_id=? or subtwo.sub_id=?)\n" +
+            "group by gen\n" +
+            "order by gen\n" +
+            limit(1);
     public static String selectPublicChatAvatar(){
         return "left join files as public_avatar on(\n" +
                 "\t(\n" +

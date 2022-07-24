@@ -57,31 +57,28 @@ public class ChatRequest {
     }
     public static ResponseEntity<?> sendMessage(String auth,int user_id,String text){
         ResponseEntity<?> response;
-        int from = JwtUtil.extractId(auth);
-        if(from!=user_id){
-            try {
-                Connection connection= Function.connect();
-                int user_id_1=Math.min(from,user_id);
-                int user_id_2=Math.max(from,user_id);
-                ResultSet resultSet=checkPrivetChat(user_id_1,user_id_2,user_id,connection);
-                if(resultSet.next()){
-                    if(!resultSet.getBoolean(Column.status)) response = ResponseEntity.badRequest().body(new Response(ResponseState.NO_ACTIVE));
-                    else {
-                        int chat_id;
-                        if (resultSet.getObject(Column.chat_id) == null) chat_id=createChat(user_id_1,user_id_2,connection);
-                        else chat_id=resultSet.getInt(Column.chat_id);
-                        saveMessage(chat_id, from, text, connection);
-                        response = ResponseEntity.ok().body(new Response(ResponseState.SUCCESS));
-                    }
+        try {
+            Connection connection= Function.connect();
+            int from = JwtUtil.extractId(auth);
+            int user_id_1=Math.min(from,user_id);
+            int user_id_2=Math.max(from,user_id);
+            ResultSet resultSet=checkPrivetChat(user_id_1,user_id_2,user_id,connection);
+            if(resultSet.next()){
+                if(!resultSet.getBoolean(Column.status)) response = ResponseEntity.badRequest().body(new Response(ResponseState.NO_ACTIVE));
+                else {
+                    int chat_id;
+                    if (resultSet.getObject(Column.chat_id) == null) chat_id=createChat(user_id_1,user_id_2,connection);
+                    else chat_id=resultSet.getInt(Column.chat_id);
+                    saveMessage(chat_id, from, text, connection);
+                    response = ResponseEntity.ok().body(new Response(ResponseState.SUCCESS));
                 }
-                else response = ResponseEntity.badRequest().body(new Response(ResponseState.NOT_EXIST));
-                connection.close();
-            } catch (SQLException e){
-                response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
             }
-            return response;
+            else response = ResponseEntity.badRequest().body(new Response(ResponseState.NOT_EXIST));
+            connection.close();
+        } catch (SQLException e){
+            response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
-        else return ResponseEntity.badRequest().body(new Response(ResponseState.NOT_EXIST));
+        return response;
     }
     private static void saveMessage(int chat_id,int from,String text,Connection connection) throws SQLException {
         PreparedStatement insertIntoMessages=connection.prepareStatement(Statement.insertIntoMessages);
