@@ -405,8 +405,7 @@ public class Statement {
 
 
     public  static String getHandshakeThirdGen(Object last){
-        return "select subfour.subscribe_id,users.user_id,users.first_name,users.last_name,users.confirm,user_avatar.url,\n" +
-                "exists(SELECT NSUB.user_id from founder.subscribes as NSUB where NSUB.user_id=founder.subscribes.user_id and subfour.sub_id=NSUB.sub_id ) AS my_sub\n" +
+        return "select subfour.subscribe_id,users.user_id,users.first_name,users.last_name,users.confirm,user_avatar.url,exists(SELECT NSUB.user_id from founder.subscribes as NSUB where NSUB.user_id=founder.subscribes.user_id and subfour.sub_id=NSUB.sub_id ) AS my_sub\n" +
                 "from subscribes\n" +
                 "inner join subscribes as sub on(sub.user_id=subscribes.sub_id and sub.sub_id=subscribes.user_id)\n" +
                 "inner join subscribes as subtwo on(subscribes.sub_id=subtwo.user_id)\n" +
@@ -415,7 +414,7 @@ public class Statement {
                 "inner join subscribes as subfive on(subfive.user_id=subfour.sub_id and subfive.sub_id=subfour.user_id)\n" +
                 "inner join users on(subfour.sub_id=users.user_id)\n" +
                 selectUserAvatar()+
-                "where subscribes.user_id=? and subfour.sub_id!=subscribes.sub_id\n" +
+                "where subscribes.user_id=? and subfour.user_id!=subscribes.user_id and subtwo.user_id!=subfour.sub_id\n" +
                 andFindByLess(Function.concat(TableName.subfour,Column.subscribe_id),last)+
                 "GROUP by users.user_id\n"+
                 orderByDesc(Function.concat(TableName.subfour,Column.subscribe_id))+

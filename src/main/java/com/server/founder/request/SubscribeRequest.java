@@ -150,6 +150,7 @@ public class SubscribeRequest {
                 });
                 getHandShake.setInt(1,owner_id);
                 if(last!=null) getHandShake.setObject(2,last);
+                System.out.println(getHandShake);
                 ResultSet resultSet=getHandShake.executeQuery();
                 List<Subscribe> list=new ArrayList<>();
                 while (resultSet.next()){
