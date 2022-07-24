@@ -303,6 +303,15 @@ public class Statement {
             "inner join poll_lines on (polls.poll_id=poll_lines.poll_id)\n" +
             "where polls.poll_id=?) as poll_lines\n" +
             "inner join polls on(poll_lines.poll_id=polls.poll_id)\n";
+    public static  String createTableHobbies="create table if not exists hobbies(\n" +
+            "hobbies_id int primary key auto_increment not null,\n" +
+            "hobbies_name varchar(36) unique);";
+    public static  String createTableUsersHobbies="create table if not exists users_hobbies(\n" +
+            "hobbies_id INT,\n" +
+            "users_id INT,\n" +
+            "foreign key (user_id) references users(user_id),\n" +
+            "foreign key (hobbies_id) references users(user_id)\n" +
+            ");";
     public static String one=" limit 1";
     public static String rangeLimit(Object next,int limit){
         if(next!=null) return "limit ?,"+limit;
