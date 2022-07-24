@@ -664,9 +664,9 @@ public class Statement {
         return str;
     }
     public static String selectPostFiles = "select post_files.post_file_id,files.url,files.contentType,files.size\n"+
-            "from post_files \n" +
-            "inner join files on(post_files.file_id=files.file_id) \n" +
-            "where post_files.post_id=? \n";
+            "from post_files\n" +
+            "inner join files on(post_files.file_id=files.file_id)\n" +
+            "where post_files.post_id=?\n";
     public static String saveComment(String tableName,String column){
         return "insert into "+tableName+" ("+column+",user_id,text) values(?,?,?)";
     }
