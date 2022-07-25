@@ -1,9 +1,9 @@
 package com.server.founder.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.server.founder.response.PreviewFiles;
 import lombok.Data;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -12,12 +12,12 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @Data
 @JsonInclude(NON_NULL)
 public class Page {
-    UserInformation user;
+    PageInformation information;
     List<Post> posts;
     public Page() {
     }
-    public Page(UserInformation information,  List<Post> posts) {
-        this.user = information;
+    public Page(PageInformation information, List<Post> posts) throws SQLException {
+        this.information = information;
         if(posts.size()>0) this.posts = posts;
     }
 }

@@ -67,16 +67,11 @@ public class OwnerController {
         if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getHandshakes(auth, generation, last);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
-    @GetMapping("/relation/{user_id}")
-    ResponseEntity<?> getRelationWithUser(@RequestHeader String auth,@PathVariable int user_id){
+
+    @PostMapping("/my_interests")
+    ResponseEntity<?> postHobbiesId(@RequestHeader String auth, @RequestParam List<Integer> interests_id){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-        if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getRelationWithUser(auth,user_id);
-        return ResponseEntity.badRequest().body(new Response(tokenState));
-    }
-    @PostMapping("/my_hobbies")
-    ResponseEntity<?> postHobbiesId(@RequestHeader String auth, @RequestParam List<Integer> hobbies_id){
-        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-        if(tokenState == ResponseState.ACCESS) return UserRequest.setMyTags(auth,hobbies_id);
+        if(tokenState == ResponseState.ACCESS) return UserRequest.setMyInterests(auth,interests_id);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
 }

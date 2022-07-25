@@ -290,6 +290,20 @@ public class Statement {
             "chat_id int,\n" +
             "file_id int\n" +
             ")";
+    public static  String createTableInterests="create table if not exists interests (\n" +
+            "interest_id  int primary key auto_increment not null,\n" +
+            "name varchar(36) unique,\n" +
+            "index(name)\n" +
+            ")";
+    public static String insertInterest="insert into interests(name) value('Startup'),('News'),('Investments'),('Business'),('Companies'),('Work'),('Finance'),('Networking'),('Small business'),('Service sector'),('Management'),('Trading'),('Politics'),('Real estate'),('Logistics'),('Advertising'),('Energetics'),('Design'),('Agriculture'),('Construction'),('Education'),('Psychology'),('Jurisprudence'),('Technique'),('Architecture'),('Travels'),('Art'),('Innovation'),('Science'),('Medicine'),('Music'),('Nature'),('Photo'),('Movie'),('Animals'),('Transport'),('Sports'),('Media'),('Fashion'),('Food')\n";
+    public static String createTableUserInterests="create table if not exists user_interests (\n" +
+            "user_id int,\n" +
+            "interest_id int,\n" +
+            "foreign key (user_id) references users(user_id)\n" +
+            "on delete restrict,\n" +
+            "foreign key (interest_id) references interests(interest_id)\n" +
+            "on delete cascade\n" +
+            ")";
     public static String selectMultiplePollLines="SELECT poll_lines.line_id FROM polls\n" +
             "inner join poll_lines on (polls.poll_id=poll_lines.poll_id)\n" +
             "where polls.poll_id=? and polls.type='MULTIPLE'";
@@ -303,15 +317,6 @@ public class Statement {
             "inner join poll_lines on (polls.poll_id=poll_lines.poll_id)\n" +
             "where polls.poll_id=?) as poll_lines\n" +
             "inner join polls on(poll_lines.poll_id=polls.poll_id)\n";
-    public static  String createTableHobbies="create table if not exists hobbies(\n" +
-            "hobbies_id int primary key auto_increment not null,\n" +
-            "hobbies_name varchar(36) unique);";
-    public static  String createTableUsersHobbies="create table if not exists users_hobbies(\n" +
-            "hobbies_id INT,\n" +
-            "users_id INT,\n" +
-            "foreign key (user_id) references users(user_id),\n" +
-            "foreign key (hobbies_id) references hobbies(hobbies_id)\n" +
-            ");";
     public static String one=" limit 1";
     public static String rangeLimit(Object next,int limit){
         if(next!=null) return "limit ?,"+limit;
@@ -320,6 +325,8 @@ public class Statement {
     public static String limit(int limit){
         return "limit "+limit;
     }
+
+
     public static String getPostLikes(boolean subscribes,Object last){
         String str = "SELECT like_id,users.user_id,users.first_name,users.last_name,user_avatar.url,users.confirm\n" +
                 "FROM user_posts\n" +
@@ -426,28 +433,42 @@ public class Statement {
                 orderByDesc(Function.concat(TableName.subfour,Column.subscribe_id))+
                 limit(25);
     }
-    public static String getRelationWithUser="select\n" +
-            "(\n" +
-            "\tCASE\n" +
+    public static String setMyInterest="INSERT INTO founder.user_interests(user_interests.user_id,user_interests.hobbies_id) VALUES";
+    public static String getRelationWithUser="SELECT users.user_id,first_name,last_name,user_avatar.url,users.confirm,description,birthday,city,\n" +
+            "(select count(sub_id) FROM subscribes where subscribes.sub_id=users.user_id) followers,\n" +
+            "(select count(sub_id) FROM subscribes where subscribes.user_id=users.user_id) subscribes,\n" +
+            "(select count(user_post_id) from user_posts where user_posts.user_id=users.user_id) as post_number,\n" +
+            "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=connection.user_id and subscribes.sub_id=users.user_id) as my_sub,\n" +
+            "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=users.user_id and subscribes.sub_id=connection.user_id) as it_sub,\n" +
+            "connection.gen,if(connection.gen=1,1,connection.number) as number\n" +
+            "FROM users\n" +
+            "left join founder.files as user_avatar on(\n" +
+            "\t(\n" +
+            "\t\tSELECT file_id\n" +
+            "\t\tFROM founder.user_avatars\n" +
+            "\t\twhere user_avatars.user_id=users.user_id\n" +
+            "\t\torder by user_avatars.avatar_id desc limit 1\n" +
+            "\t)=user_avatar.file_id\n" +
+            ")\n" +
+            "left join (\n" +
+            "select min(CASE\n" +
             "\t\tWHEN subscribes.sub_id=? THEN 1\n" +
-            "\t\tWHEN subone.sub_id=? THEN 2\n" +
+            "\t\tWHEN sub.sub_id=? THEN 2\n" +
             "\t\tWHEN subtwo.sub_id=? THEN 3\n" +
             "\t\tELSE 0\n" +
             "\tEND\n" +
-            ") as gen,count(subscribes.user_id) as number,\n" +
-            "(select count(sub.sub_id) from subscribes as sub where sub.user_id=subscribes.user_id and sub.sub_id=?) as my_sub,\n" +
-            "(select count(sub.subscribe_id) from subscribes as sub where sub.user_id=? and sub.sub_id=subscribes.user_id) as it_sub\n" +
+            ") as gen,count(subscribes.user_id) as number,subscribes.user_id\n" +
             "from subscribes\n" +
-            "left join subscribes as subone on(subscribes.sub_id=subone.user_id and subscribes.user_id!=subone.sub_id and subscribes.sub_id!=?)\n" +
-            "left join subscribes as subtwo on(subone.sub_id=subtwo.user_id and subscribes.user_id!=subtwo.sub_id and subscribes.sub_id!=subtwo.sub_id and subone.sub_id!=?)\n" +
-            "where subscribes.user_id=? and \n" +
+            "left join subscribes as sub on(subscribes.sub_id=sub.user_id and subscribes.user_id!=sub.sub_id and subscribes.sub_id!=?)\n" +
+            "left join subscribes as subtwo on(sub.sub_id=subtwo.user_id and subscribes.user_id!=subtwo.sub_id and subscribes.sub_id!=subtwo.sub_id and sub.sub_id!=?)\n" +
+            "where subscribes.user_id=? and\n" +
             "(select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=subscribes.user_id) and\n" +
-            "(subone.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subone.sub_id and nsub.sub_id=subone.user_id)) and\n" +
-            "(subone.sub_id is null or subtwo.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subtwo.sub_id and nsub.sub_id=subtwo.user_id)) and\n" +
-            "(subscribes.sub_id=? or subone.sub_id=? or subtwo.sub_id=?)\n" +
-            "group by gen\n" +
+            "(sub.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=sub.user_id)) and\n" +
+            "(sub.sub_id is null or subtwo.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subtwo.sub_id and nsub.sub_id=subtwo.user_id)) and\n" +
+            "(subscribes.sub_id=? or sub.sub_id=? or subtwo.sub_id=?)\n" +
             "order by gen\n" +
-            limit(1);
+            ") as connection on(1)\n" +
+            "where users.user_id=?";
     public static String selectPublicChatAvatar(){
         return "left join files as public_avatar on(\n" +
                 "\t(\n" +
@@ -458,14 +479,41 @@ public class Statement {
                 "\t)=public_avatar.file_id\n" +
                 ")\n";
     }
-    public static String selectUserInformation="SELECT users.user_id,first_name,last_name,user_avatar.url,users.confirm,description,birthday,city,\n" +
-            "(SELECT count(sub_id) FROM subscribes where subscribes.sub_id=users.user_id) followers,\n" +
-            "(SELECT count(sub_id) FROM subscribes where subscribes.user_id=users.user_id) subscribes,\n" +
-            "(SELECT count(user_post_id) from user_posts where user_posts.user_id=users.user_id) as post_number\n" +
+    public static String selectPageInformation="SELECT users.user_id,first_name,last_name,user_avatar.url,users.confirm,description,birthday,city,\n" +
+            "(select count(sub_id) FROM subscribes where subscribes.sub_id=users.user_id) followers,\n" +
+            "(select count(sub_id) FROM subscribes where subscribes.user_id=users.user_id) subscribes,\n" +
+            "(select count(user_post_id) from user_posts where user_posts.user_id=users.user_id) as post_number,\n" +
+            "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=connection.user_id and subscribes.sub_id=users.user_id) as my_sub,\n" +
+            "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=users.user_id and subscribes.sub_id=connection.user_id) as it_sub,\n" +
+            "connection.gen,if(connection.gen=1,1,connection.number) as number\n" +
             "FROM users\n" +
-            selectUserAvatar()+
-            "where users.user_id = ?\n" +
-            "\n";
+            "left join founder.files as user_avatar on(\n" +
+            "\t(\n" +
+            "\t\tSELECT file_id\n" +
+            "\t\tFROM founder.user_avatars\n" +
+            "\t\twhere user_avatars.user_id=users.user_id\n" +
+            "\t\torder by user_avatars.avatar_id desc limit 1\n" +
+            "\t)=user_avatar.file_id\n" +
+            ")\n" +
+            "left join (\n" +
+            "select min(CASE\n" +
+            "\t\tWHEN subscribes.sub_id=? THEN 1\n" +
+            "\t\tWHEN sub.sub_id=? THEN 2\n" +
+            "\t\tWHEN subtwo.sub_id=? THEN 3\n" +
+            "\t\tELSE 0\n" +
+            "\tEND\n" +
+            ") as gen,count(subscribes.user_id) as number,subscribes.user_id\n" +
+            "from subscribes\n" +
+            "left join subscribes as sub on(subscribes.sub_id=sub.user_id and subscribes.user_id!=sub.sub_id and subscribes.sub_id!=?)\n" +
+            "left join subscribes as subtwo on(sub.sub_id=subtwo.user_id and subscribes.user_id!=subtwo.sub_id and subscribes.sub_id!=subtwo.sub_id and sub.sub_id!=?)\n" +
+            "where subscribes.user_id=? and\n" +
+            "(select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=subscribes.user_id) and\n" +
+            "(sub.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=sub.user_id)) and\n" +
+            "(sub.sub_id is null or subtwo.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subtwo.sub_id and nsub.sub_id=subtwo.user_id)) and\n" +
+            "(subscribes.sub_id=? or sub.sub_id=? or subtwo.sub_id=?)\n" +
+            "order by gen\n" +
+            ") as connection on(1)\n" +
+            "where users.user_id = ?";
     public static String bySubscribe="subscribes.sub_id=user_posts.user_id";
     public static String byUserLikes="post_likes.user_post_id=user_posts.user_post_id";
     public static String deleteUserAvatar="delete from user_avatars where avatar_id=? and user_id=?";
@@ -772,9 +820,6 @@ public class Statement {
     public static String findItemBy (String tableName,String column,String by){
         return select(column)+tableName+" "+findBy(by);
     }
-    public static String setMyTags="INSERT INTO founder.users_hobbies(users_hobbies.user_id,users_hobbies.hobbies_id)\n" +
-                "VALUES ";
-
     public static String subscribe="replace into "+TableName.subscribes+" (user_id,sub_id) values(?,?)";
     public static String deleteLikeOnPostPreviewFile="delete from file_likes where file_likes.file_id=(SELECT file_id from post_files \n" +
             "where post_id=(select post_id from user_posts where user_post_id=?) and post_files.status=true\n" +
