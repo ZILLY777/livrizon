@@ -151,25 +151,34 @@ public class UserRequest {
         if(list.size()>0) return list;
         else return null;
     }
-    public static UserInformation findUserInformationById(int user_id,Connection connection) throws SQLException {
-        PreparedStatement findProfile=connection.prepareStatement(Statement.selectUserInformation);
-        findProfile.setInt(1,user_id);
-        ResultSet resultSet=findProfile.executeQuery();
-        if(resultSet.next()) return new UserInformation(resultSet);
+    public static PageInformation findPageInformation(Object owner_id, int user_id, Connection connection) throws SQLException {
+        PreparedStatement selectPageInformation=connection.prepareStatement(Statement.selectPageInformation);
+        selectPageInformation.setInt(1,user_id);
+        selectPageInformation.setInt(2,user_id);
+        selectPageInformation.setInt(3,user_id);
+        selectPageInformation.setInt(4,user_id);
+        selectPageInformation.setInt(5,user_id);
+        selectPageInformation.setObject(6,owner_id);
+        selectPageInformation.setInt(7,user_id);
+        selectPageInformation.setObject(8,user_id);
+        selectPageInformation.setInt(9,user_id);
+        selectPageInformation.setInt(10,user_id);
+        ResultSet resultSet=selectPageInformation.executeQuery();
+        if(resultSet.next()) return new PageInformation(resultSet);
         else return null;
     }
 
     public static ResponseEntity<?> getPage(String auth,int user_id){
         ResponseEntity<?> response;
         try {
+            Object owner_id=JwtUtil.extractIdOrNull(auth);
             Connection connection= Function.connect();
             response = ResponseEntity.ok().body(new Page(
-                    findUserInformationById(user_id,connection),
-                    Request.getPostsBy(JwtUtil.extractIdOrNull(auth),TableName.user_posts,null, Column.user_id,user_id,null))
-            );
+                    findPageInformation(owner_id,user_id,connection),
+                    Request.getPostsBy(user_id,TableName.user_posts,null, Column.user_id,user_id,null)
+            ));
             connection.close();
         } catch (SQLException e){
-            System.out.println(e);
             response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
         return response;

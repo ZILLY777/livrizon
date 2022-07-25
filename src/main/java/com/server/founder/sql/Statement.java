@@ -426,28 +426,41 @@ public class Statement {
                 orderByDesc(Function.concat(TableName.subfour,Column.subscribe_id))+
                 limit(25);
     }
-    public static String getRelationWithUser="select\n" +
-            "(\n" +
-            "\tCASE\n" +
+    public static String getRelationWithUser="SELECT users.user_id,first_name,last_name,user_avatar.url,users.confirm,description,birthday,city,\n" +
+            "(select count(sub_id) FROM subscribes where subscribes.sub_id=users.user_id) followers,\n" +
+            "(select count(sub_id) FROM subscribes where subscribes.user_id=users.user_id) subscribes,\n" +
+            "(select count(user_post_id) from user_posts where user_posts.user_id=users.user_id) as post_number,\n" +
+            "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=connection.user_id and subscribes.sub_id=users.user_id) as my_sub,\n" +
+            "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=users.user_id and subscribes.sub_id=connection.user_id) as it_sub,\n" +
+            "connection.gen,if(connection.gen=1,1,connection.number) as number\n" +
+            "FROM users\n" +
+            "left join founder.files as user_avatar on(\n" +
+            "\t(\n" +
+            "\t\tSELECT file_id\n" +
+            "\t\tFROM founder.user_avatars\n" +
+            "\t\twhere user_avatars.user_id=users.user_id\n" +
+            "\t\torder by user_avatars.avatar_id desc limit 1\n" +
+            "\t)=user_avatar.file_id\n" +
+            ")\n" +
+            "left join (\n" +
+            "select min(CASE\n" +
             "\t\tWHEN subscribes.sub_id=? THEN 1\n" +
-            "\t\tWHEN subone.sub_id=? THEN 2\n" +
+            "\t\tWHEN sub.sub_id=? THEN 2\n" +
             "\t\tWHEN subtwo.sub_id=? THEN 3\n" +
             "\t\tELSE 0\n" +
             "\tEND\n" +
-            ") as gen,count(subscribes.user_id) as number,\n" +
-            "(select count(sub.sub_id) from subscribes as sub where sub.user_id=subscribes.user_id and sub.sub_id=?) as my_sub,\n" +
-            "(select count(sub.subscribe_id) from subscribes as sub where sub.user_id=? and sub.sub_id=subscribes.user_id) as it_sub\n" +
+            ") as gen,count(subscribes.user_id) as number,subscribes.user_id\n" +
             "from subscribes\n" +
-            "left join subscribes as subone on(subscribes.sub_id=subone.user_id and subscribes.user_id!=subone.sub_id and subscribes.sub_id!=?)\n" +
-            "left join subscribes as subtwo on(subone.sub_id=subtwo.user_id and subscribes.user_id!=subtwo.sub_id and subscribes.sub_id!=subtwo.sub_id and subone.sub_id!=?)\n" +
-            "where subscribes.user_id=? and \n" +
+            "left join subscribes as sub on(subscribes.sub_id=sub.user_id and subscribes.user_id!=sub.sub_id and subscribes.sub_id!=?)\n" +
+            "left join subscribes as subtwo on(sub.sub_id=subtwo.user_id and subscribes.user_id!=subtwo.sub_id and subscribes.sub_id!=subtwo.sub_id and sub.sub_id!=?)\n" +
+            "where subscribes.user_id=? and\n" +
             "(select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=subscribes.user_id) and\n" +
-            "(subone.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subone.sub_id and nsub.sub_id=subone.user_id)) and\n" +
-            "(subone.sub_id is null or subtwo.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subtwo.sub_id and nsub.sub_id=subtwo.user_id)) and\n" +
-            "(subscribes.sub_id=? or subone.sub_id=? or subtwo.sub_id=?)\n" +
-            "group by gen\n" +
+            "(sub.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=sub.user_id)) and\n" +
+            "(sub.sub_id is null or subtwo.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subtwo.sub_id and nsub.sub_id=subtwo.user_id)) and\n" +
+            "(subscribes.sub_id=? or sub.sub_id=? or subtwo.sub_id=?)\n" +
             "order by gen\n" +
-            limit(1);
+            ") as connection on(1)\n" +
+            "where users.user_id=?";
     public static String selectPublicChatAvatar(){
         return "left join files as public_avatar on(\n" +
                 "\t(\n" +
@@ -458,14 +471,41 @@ public class Statement {
                 "\t)=public_avatar.file_id\n" +
                 ")\n";
     }
-    public static String selectUserInformation="SELECT users.user_id,first_name,last_name,user_avatar.url,users.confirm,description,birthday,city,\n" +
-            "(SELECT count(sub_id) FROM subscribes where subscribes.sub_id=users.user_id) followers,\n" +
-            "(SELECT count(sub_id) FROM subscribes where subscribes.user_id=users.user_id) subscribes,\n" +
-            "(SELECT count(user_post_id) from user_posts where user_posts.user_id=users.user_id) as post_number\n" +
+    public static String selectPageInformation="SELECT users.user_id,first_name,last_name,user_avatar.url,users.confirm,description,birthday,city,\n" +
+            "(select count(sub_id) FROM subscribes where subscribes.sub_id=users.user_id) followers,\n" +
+            "(select count(sub_id) FROM subscribes where subscribes.user_id=users.user_id) subscribes,\n" +
+            "(select count(user_post_id) from user_posts where user_posts.user_id=users.user_id) as post_number,\n" +
+            "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=connection.user_id and subscribes.sub_id=users.user_id) as my_sub,\n" +
+            "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=users.user_id and subscribes.sub_id=connection.user_id) as it_sub,\n" +
+            "connection.gen,if(connection.gen=1,1,connection.number) as number\n" +
             "FROM users\n" +
-            selectUserAvatar()+
-            "where users.user_id = ?\n" +
-            "\n";
+            "left join founder.files as user_avatar on(\n" +
+            "\t(\n" +
+            "\t\tSELECT file_id\n" +
+            "\t\tFROM founder.user_avatars\n" +
+            "\t\twhere user_avatars.user_id=users.user_id\n" +
+            "\t\torder by user_avatars.avatar_id desc limit 1\n" +
+            "\t)=user_avatar.file_id\n" +
+            ")\n" +
+            "left join (\n" +
+            "select min(CASE\n" +
+            "\t\tWHEN subscribes.sub_id=? THEN 1\n" +
+            "\t\tWHEN sub.sub_id=? THEN 2\n" +
+            "\t\tWHEN subtwo.sub_id=? THEN 3\n" +
+            "\t\tELSE 0\n" +
+            "\tEND\n" +
+            ") as gen,count(subscribes.user_id) as number,subscribes.user_id\n" +
+            "from subscribes\n" +
+            "left join subscribes as sub on(subscribes.sub_id=sub.user_id and subscribes.user_id!=sub.sub_id and subscribes.sub_id!=?)\n" +
+            "left join subscribes as subtwo on(sub.sub_id=subtwo.user_id and subscribes.user_id!=subtwo.sub_id and subscribes.sub_id!=subtwo.sub_id and sub.sub_id!=?)\n" +
+            "where subscribes.user_id=? and\n" +
+            "(select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=subscribes.user_id) and\n" +
+            "(sub.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=sub.user_id)) and\n" +
+            "(sub.sub_id is null or subtwo.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subtwo.sub_id and nsub.sub_id=subtwo.user_id)) and\n" +
+            "(subscribes.sub_id=? or sub.sub_id=? or subtwo.sub_id=?)\n" +
+            "order by gen\n" +
+            ") as connection on(1)\n" +
+            "where users.user_id = ?";
     public static String bySubscribe="subscribes.sub_id=user_posts.user_id";
     public static String byUserLikes="post_likes.user_post_id=user_posts.user_post_id";
     public static String deleteUserAvatar="delete from user_avatars where avatar_id=? and user_id=?";
