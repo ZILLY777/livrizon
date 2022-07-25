@@ -119,6 +119,25 @@ public class UserRequest {
         }
         return response;
     }
+    public static ResponseEntity<?> setMyTags(String auth,List<Integer> hobbies_id){
+        int owner_id=JwtUtil.extractId(auth);
+        ResponseEntity<?> response;
+        try {
+            Connection connection=Function.connect();
+            PreparedStatement setTags=connection.prepareStatement(Statement.setMyTags+Function.toValue(hobbies_id.size()));
+            for (int i=0;i<hobbies_id.size();i++){
+                setTags.setInt(i*2+1,owner_id);
+                setTags.setInt(i*2+2,hobbies_id.get(i));///спросить у дани про индексировнаие
+
+            }
+            response=ResponseEntity.ok(new Response(ResponseState.SUCCESS));
+            setTags.execute();
+            connection.close();
+        } catch (Exception e){
+            response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
+        }
+        return response;
+    }
     public static ResponseEntity<?> getFileFromUserPage(int user_id,Object last){
         ResponseEntity<?> response;
         try {

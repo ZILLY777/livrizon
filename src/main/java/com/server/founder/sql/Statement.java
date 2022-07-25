@@ -310,7 +310,7 @@ public class Statement {
             "hobbies_id INT,\n" +
             "users_id INT,\n" +
             "foreign key (user_id) references users(user_id),\n" +
-            "foreign key (hobbies_id) references users(user_id)\n" +
+            "foreign key (hobbies_id) references hobbies(hobbies_id)\n" +
             ");";
     public static String one=" limit 1";
     public static String rangeLimit(Object next,int limit){
@@ -772,6 +772,9 @@ public class Statement {
     public static String findItemBy (String tableName,String column,String by){
         return select(column)+tableName+" "+findBy(by);
     }
+    public static String setMyTags="INSERT INTO founder.users_hobbies(users_hobbies.user_id,users_hobbies.hobbies_id)\n" +
+                "VALUES ";
+
     public static String subscribe="replace into "+TableName.subscribes+" (user_id,sub_id) values(?,?)";
     public static String deleteLikeOnPostPreviewFile="delete from file_likes where file_likes.file_id=(SELECT file_id from post_files \n" +
             "where post_id=(select post_id from user_posts where user_post_id=?) and post_files.status=true\n" +
