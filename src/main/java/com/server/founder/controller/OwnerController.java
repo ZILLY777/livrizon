@@ -43,7 +43,6 @@ public class OwnerController {
     @GetMapping("/my_likes/files")
     ResponseEntity<?> getMyLikeFiles(@RequestHeader String auth, @RequestParam(required = false) Object last){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
     @GetMapping("/chats")

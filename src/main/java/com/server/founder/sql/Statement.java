@@ -295,14 +295,14 @@ public class Statement {
             "name varchar(36) unique,\n" +
             "index(name)\n" +
             ")";
-    public static String insertInterest="insert into interests(name) value('Startup'),('News'),('Investments'),('Business'),('Companies'),('Work'),('Finance'),('Networking'),('Small business'),('Service sector'),('Management'),('Trading'),('Politics'),('Real estate'),('Logistics'),('Advertising'),('Energetics'),('Design'),('Agriculture'),('Construction'),('Education'),('Psychology'),('Jurisprudence'),('Technique'),('Architecture'),('Travels'),('Art'),('Innovation'),('Science'),('Medicine'),('Music'),('Nature'),('Photo'),('Movie'),('Animals'),('Transport'),('Sports'),('Media'),('Fashion'),('Food')\n";
+    public static String insertInterests="insert into interests(name) value('Startup'),('News'),('Investments'),('Business'),('Companies'),('Work'),('Finance'),('Networking'),('Small business'),('Service sector'),('Management'),('Trading'),('Politics'),('Real estate'),('Logistics'),('Advertising'),('Energetics'),('Design'),('Agriculture'),('Construction'),('Education'),('Psychology'),('Jurisprudence'),('Technique'),('Architecture'),('Travels'),('Art'),('Innovation'),('Science'),('Medicine'),('Music'),('Nature'),('Photo'),('Movie'),('Animals'),('Transport'),('Sports'),('Media'),('Fashion'),('Food')\n";
     public static String createTableUserInterests="create table if not exists user_interests (\n" +
             "user_id int,\n" +
             "interest_id int,\n" +
             "foreign key (user_id) references users(user_id)\n" +
             "on delete restrict,\n" +
             "foreign key (interest_id) references interests(interest_id)\n" +
-            "on delete cascade\n" +
+            "on delete restrict\n" +
             ")";
     public static String selectMultiplePollLines="SELECT poll_lines.line_id FROM polls\n" +
             "inner join poll_lines on (polls.poll_id=poll_lines.poll_id)\n" +
@@ -482,7 +482,7 @@ public class Statement {
             "(select count(user_post_id) from user_posts where user_posts.user_id=users.user_id) as post_number,\n" +
             "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=connection.user_id and subscribes.sub_id=users.user_id) as my_sub,\n" +
             "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=users.user_id and subscribes.sub_id=connection.user_id) as it_sub,\n" +
-            "connection.gen,if(connection.gen=1,1,connection.number) as number\n" +
+            "connection.gen,connection.number as number\n" +
             "FROM users\n" +
             "left join founder.files as user_avatar on(\n" +
             "\t(\n" +
