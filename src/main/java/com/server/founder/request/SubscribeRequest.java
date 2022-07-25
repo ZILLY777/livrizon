@@ -111,24 +111,7 @@ public class SubscribeRequest {
         else response = ResponseEntity.badRequest().body(new Response(ResponseState.YOURSELF));
         return response;
     }
-    public static Relation getRelationWithUser(Object owner_id, int user_id, Connection connection) throws SQLException {
-        PreparedStatement getRelationWithUser=connection.prepareStatement(Statement.getRelationWithUser);
-        getRelationWithUser.setInt(1,user_id);
-        getRelationWithUser.setInt(2,user_id);
-        getRelationWithUser.setInt(3,user_id);
-        getRelationWithUser.setInt(4,user_id);
-        getRelationWithUser.setInt(5,user_id);
-        getRelationWithUser.setInt(6,user_id);
-        getRelationWithUser.setInt(7,user_id);
-        getRelationWithUser.setObject(8,owner_id);
-        getRelationWithUser.setInt(9,user_id);
-        getRelationWithUser.setInt(10,user_id);
-        getRelationWithUser.setInt(11,user_id);
-        getRelationWithUser.setObject(12,owner_id);
-        ResultSet resultSet=getRelationWithUser.executeQuery();
-        if(resultSet.next()) return new Relation(resultSet);
-        else return null;
-    }
+
     public static ResponseEntity<?> getMutualConnection(String auth, int user_id, Object last){
         ResponseEntity<?> response;
         int owner_id=JwtUtil.extractId(auth);

@@ -119,6 +119,26 @@ public class UserRequest {
         }
         return response;
     }
+    public static ResponseEntity<?> setMyInterests(String auth,List<Integer> interests_id){
+        int owner_id=JwtUtil.extractId(auth);
+        ResponseEntity<?> response;
+        try {
+            Connection connection=Function.connect();
+            PreparedStatement setTags=connection.prepareStatement(Statement.setMyInterest+Function.toValue(interests_id.size()));
+            for (int i=0;i<interests_id.size();i++){
+                setTags.setInt(i*2+1,owner_id);
+                setTags.setInt(i*2+2,interests_id.get(i));
+            }
+            System.out.println(setTags);
+            response=ResponseEntity.ok(new Response(ResponseState.SUCCESS));
+            System.out.println(response);
+            setTags.execute();
+            connection.close();
+        } catch (Exception e){
+            response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
+        }
+        return response;
+    }
     public static ResponseEntity<?> getFileFromUserPage(int user_id,Object last){
         ResponseEntity<?> response;
         try {

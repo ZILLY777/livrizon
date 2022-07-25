@@ -325,6 +325,8 @@ public class Statement {
     public static String limit(int limit){
         return "limit "+limit;
     }
+
+
     public static String getPostLikes(boolean subscribes,Object last){
         String str = "SELECT like_id,users.user_id,users.first_name,users.last_name,user_avatar.url,users.confirm\n" +
                 "FROM user_posts\n" +
@@ -431,6 +433,7 @@ public class Statement {
                 orderByDesc(Function.concat(TableName.subfour,Column.subscribe_id))+
                 limit(25);
     }
+    public static String setMyInterest="insert into founder.user_interests(user_id,interest_id) values";
     public static String getRelationWithUser="SELECT users.user_id,first_name,last_name,user_avatar.url,users.confirm,description,birthday,city,\n" +
             "(select count(sub_id) FROM subscribes where subscribes.sub_id=users.user_id) followers,\n" +
             "(select count(sub_id) FROM subscribes where subscribes.user_id=users.user_id) subscribes,\n" +

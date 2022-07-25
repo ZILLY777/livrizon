@@ -7,12 +7,15 @@ import com.server.founder.model.TokenType;
 import com.server.founder.request.ChatRequest;
 import com.server.founder.request.SubscribeRequest;
 import com.server.founder.request.PostRequest;
+import com.server.founder.request.UserRequest;
 import com.server.founder.security.JwtUtil;
 import com.server.founder.sql.Column;
 import com.server.founder.sql.Statement;
 import com.server.founder.sql.TableName;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class OwnerController {
@@ -61,6 +64,13 @@ public class OwnerController {
     ResponseEntity<?> getHandshakesSubscribe(@RequestHeader String auth,@PathVariable int generation, @RequestParam(required = false) String last){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
         if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getHandshakes(auth, generation, last);
+        return ResponseEntity.badRequest().body(new Response(tokenState));
+    }
+
+    @PostMapping("/my_interests")
+    ResponseEntity<?> postHobbiesId(@RequestHeader String auth, @RequestParam List<Integer> interests_id){
+        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
+        if(tokenState == ResponseState.ACCESS) return UserRequest.setMyInterests(auth,interests_id);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
 }
