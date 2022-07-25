@@ -290,6 +290,20 @@ public class Statement {
             "chat_id int,\n" +
             "file_id int\n" +
             ")";
+    public static  String createTableInterests="create table if not exists interests (\n" +
+            "interest_id  int primary key auto_increment not null,\n" +
+            "name varchar(36) unique,\n" +
+            "index(name)\n" +
+            ")";
+    public static String insertInterest="insert into interests(name) value('Startup'),('News'),('Investments'),('Business'),('Companies'),('Work'),('Finance'),('Networking'),('Small business'),('Service sector'),('Management'),('Trading'),('Politics'),('Real estate'),('Logistics'),('Advertising'),('Energetics'),('Design'),('Agriculture'),('Construction'),('Education'),('Psychology'),('Jurisprudence'),('Technique'),('Architecture'),('Travels'),('Art'),('Innovation'),('Science'),('Medicine'),('Music'),('Nature'),('Photo'),('Movie'),('Animals'),('Transport'),('Sports'),('Media'),('Fashion'),('Food')\n";
+    public static String createTableUserInterests="create table if not exists user_interests (\n" +
+            "user_id int,\n" +
+            "interest_id int,\n" +
+            "foreign key (user_id) references users(user_id)\n" +
+            "on delete restrict,\n" +
+            "foreign key (interest_id) references interests(interest_id)\n" +
+            "on delete cascade\n" +
+            ")";
     public static String selectMultiplePollLines="SELECT poll_lines.line_id FROM polls\n" +
             "inner join poll_lines on (polls.poll_id=poll_lines.poll_id)\n" +
             "where polls.poll_id=? and polls.type='MULTIPLE'";
@@ -303,15 +317,6 @@ public class Statement {
             "inner join poll_lines on (polls.poll_id=poll_lines.poll_id)\n" +
             "where polls.poll_id=?) as poll_lines\n" +
             "inner join polls on(poll_lines.poll_id=polls.poll_id)\n";
-    public static  String createTableHobbies="create table if not exists hobbies(\n" +
-            "hobbies_id int primary key auto_increment not null,\n" +
-            "hobbies_name varchar(36) unique);";
-    public static  String createTableUsersHobbies="create table if not exists users_hobbies(\n" +
-            "hobbies_id INT,\n" +
-            "users_id INT,\n" +
-            "foreign key (user_id) references users(user_id),\n" +
-            "foreign key (hobbies_id) references users(user_id)\n" +
-            ");";
     public static String one=" limit 1";
     public static String rangeLimit(Object next,int limit){
         if(next!=null) return "limit ?,"+limit;

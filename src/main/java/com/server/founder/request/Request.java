@@ -167,8 +167,8 @@ public class Request {
         PreparedStatement createTableMembers=connection.prepareStatement(Statement.createTableMembers);
         PreparedStatement createTableUserConnection=connection.prepareStatement(Statement.createTableUserConnection);
         PreparedStatement createTablePublicAvatars=connection.prepareStatement(Statement.createTablePublicAvatars);
-        PreparedStatement createTableHobbies=connection.prepareStatement(Statement.createTableHobbies);
-        PreparedStatement createTableUsersHobbies=connection.prepareStatement(Statement.createTableUsersHobbies);
+        PreparedStatement createTableInterests=connection.prepareStatement(Statement.createTableInterests);
+        PreparedStatement createTableUserInterests=connection.prepareStatement(Statement.createTableUserInterests);
         createTableUsers.execute();
         createTableFiles.execute();
         createTableLogin.execute();
@@ -194,7 +194,8 @@ public class Request {
         createTableMembers.execute();
         createTableUserConnection.execute();
         createTablePublicAvatars.execute();
-        createTableHobbies.execute();
+        createTableInterests.execute();
+        createTableUserInterests.execute();
         connection.close();
     }
     public static void deleteAllVotes(int poll_id ,int user_id,Connection connection) throws SQLException {
