@@ -127,10 +127,11 @@ public class UserRequest {
             PreparedStatement setTags=connection.prepareStatement(Statement.setMyInterest+Function.toValue(interests_id.size()));
             for (int i=0;i<interests_id.size();i++){
                 setTags.setInt(i*2+1,owner_id);
-                setTags.setInt(i*2+2,interests_id.get(i));///спросить у дани про индексировнаие
-
+                setTags.setInt(i*2+2,interests_id.get(i));
             }
+            System.out.println(setTags);
             response=ResponseEntity.ok(new Response(ResponseState.SUCCESS));
+            System.out.println(response);
             setTags.execute();
             connection.close();
         } catch (Exception e){

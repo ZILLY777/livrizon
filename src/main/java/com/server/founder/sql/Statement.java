@@ -433,7 +433,7 @@ public class Statement {
                 orderByDesc(Function.concat(TableName.subfour,Column.subscribe_id))+
                 limit(25);
     }
-    public static String setMyInterest="INSERT INTO founder.user_interests(user_interests.user_id,user_interests.hobbies_id) VALUES";
+    public static String setMyInterest="insert into founder.user_interests(user_id,interest_id) values";
     public static String getRelationWithUser="SELECT users.user_id,first_name,last_name,user_avatar.url,users.confirm,description,birthday,city,\n" +
             "(select count(sub_id) FROM subscribes where subscribes.sub_id=users.user_id) followers,\n" +
             "(select count(sub_id) FROM subscribes where subscribes.user_id=users.user_id) subscribes,\n" +
