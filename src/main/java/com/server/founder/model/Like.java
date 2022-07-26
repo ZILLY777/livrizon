@@ -1,4 +1,4 @@
-package com.server.founder.request;
+package com.server.founder.model;
 
 import com.server.founder.model.UserProfile;
 import com.server.founder.sql.Column;

@@ -5,6 +5,7 @@ import com.server.founder.model.*;
 import com.server.founder.security.JwtUtil;
 import com.server.founder.sql.Column;
 import com.server.founder.sql.Statement;
+import com.server.founder.sql.TableName;
 import org.springframework.http.ResponseEntity;
 
 import java.sql.Connection;
@@ -30,9 +31,9 @@ public class SubscribeRequest {
             selectSub.setInt(1,JwtUtil.extractId(auth));
             if(next!=null) selectSub.setInt(2, Integer.parseInt(next));
             ResultSet resultSet=selectSub.executeQuery();
-            List<MySubscribe> list=new ArrayList<>();
+            List<UserProfile> list=new ArrayList<>();
             while (resultSet.next()){
-                list.add(new MySubscribe(resultSet));
+                list.add(new UserProfile(resultSet, TableName.users,TableName.user_avatar));
             }
             connection.close();
             return ResponseEntity.ok().body(list);

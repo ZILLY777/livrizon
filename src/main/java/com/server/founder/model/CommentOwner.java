@@ -12,13 +12,13 @@ public class CommentOwner {
     int comment_id;
     long date;
     String text;
-    Owner owner;
+    Owner user;
     public CommentOwner() {
     }
     public CommentOwner(ResultSet resultSet) throws SQLException {
         this.comment_id = resultSet.getInt(Column.comment_id);
         this.date = resultSet.getTimestamp(Column.date).getTime()/1000;
         this.text = resultSet.getString(Column.text);
-        this.owner = new Owner(resultSet,TableName.user_comment);
+        this.user = new Owner(resultSet,TableName.user_comment);
     }
 }

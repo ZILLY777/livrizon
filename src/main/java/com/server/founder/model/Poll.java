@@ -20,7 +20,7 @@ public class Poll {
     PollType type;
     PollViewType view;
     String theme;
-    Owner owner;
+    Owner user;
     List<PollLine> lines;
     List<AvatarOwner> subscribes;
     int total;
@@ -33,7 +33,7 @@ public class Poll {
         this.type = PollType.valueOf(resultSet.getString(Column.type));
         this.view = PollViewType.valueOf(resultSet.getString(Column.view));
         this.theme = resultSet.getString(Column.theme);
-        this.owner = new Owner(resultSet,TableName.user_poll);
+        this.user = new Owner(resultSet,TableName.user_poll);
         PollView pollView = PollRequest.getPollLines(user_id,resultSet.getInt(Column.poll_id),connection);
         this.lines = pollView.getLines();
         if(user_id!=null) this.subscribes = PollRequest.selectMySubOfPull(resultSet.getInt(Column.poll_id),(Integer) user_id,connection);

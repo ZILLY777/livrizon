@@ -434,41 +434,46 @@ public class Statement {
                 limit(25);
     }
     public static String setMyInterest="insert into founder.user_interests(user_id,interest_id) values";
-    public static String getRelationWithUser="SELECT users.user_id,first_name,last_name,user_avatar.url,users.confirm,description,birthday,city,\n" +
-            "(select count(sub_id) FROM subscribes where subscribes.sub_id=users.user_id) followers,\n" +
-            "(select count(sub_id) FROM subscribes where subscribes.user_id=users.user_id) subscribes,\n" +
-            "(select count(user_post_id) from user_posts where user_posts.user_id=users.user_id) as post_number,\n" +
-            "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=connection.user_id and subscribes.sub_id=users.user_id) as my_sub,\n" +
-            "(select count(subscribes.sub_id) from subscribes where subscribes.user_id=users.user_id and subscribes.sub_id=connection.user_id) as it_sub,\n" +
-            "connection.gen,if(connection.gen=1,1,connection.number) as number\n" +
-            "FROM users\n" +
-            "left join founder.files as user_avatar on(\n" +
-            "\t(\n" +
-            "\t\tSELECT file_id\n" +
-            "\t\tFROM founder.user_avatars\n" +
-            "\t\twhere user_avatars.user_id=users.user_id\n" +
-            "\t\torder by user_avatars.avatar_id desc limit 1\n" +
-            "\t)=user_avatar.file_id\n" +
-            ")\n" +
-            "left join (\n" +
-            "select min(CASE\n" +
-            "\t\tWHEN subscribes.sub_id=? THEN 1\n" +
-            "\t\tWHEN sub.sub_id=? THEN 2\n" +
-            "\t\tWHEN subtwo.sub_id=? THEN 3\n" +
-            "\t\tELSE 0\n" +
-            "\tEND\n" +
-            ") as gen,count(subscribes.user_id) as number,subscribes.user_id\n" +
+    public static String getRelationWithUser="select user_one.user_id,user_one.first_name,user_one.last_name,user_one.confirm,user_one_avatar.url,\n" +
+            "user_two.user_id,user_two.first_name,user_two.last_name,user_two.confirm,user_two_avatar.url\n" +
             "from subscribes\n" +
             "left join subscribes as sub on(subscribes.sub_id=sub.user_id and subscribes.user_id!=sub.sub_id and subscribes.sub_id!=?)\n" +
             "left join subscribes as subtwo on(sub.sub_id=subtwo.user_id and subscribes.user_id!=subtwo.sub_id and subscribes.sub_id!=subtwo.sub_id and sub.sub_id!=?)\n" +
+            "inner join users as user_one on(subscribes.sub_id=user_one.user_id)\n" +
+            "left join users as user_two on(if(sub.sub_id=?,null,sub.sub_id)=user_two.user_id)\n" +
+            selectUserAvatar(TableName.user_one_avatar,Function.concat(TableName.user_one,Column.user_id))+
+            selectUserAvatar(TableName.user_two_avatar,Function.concat(TableName.user_two,Column.user_id))+
             "where subscribes.user_id=? and\n" +
             "(select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=subscribes.user_id) and\n" +
             "(sub.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=sub.user_id)) and\n" +
-            "(sub.sub_id is null or subtwo.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subtwo.sub_id and nsub.sub_id=subtwo.user_id)) and\n" +
-            "(subscribes.sub_id=? or sub.sub_id=? or subtwo.sub_id=?)\n" +
-            "order by gen\n" +
-            ") as connection on(1)\n" +
-            "where users.user_id=?";
+            "(sub.sub_id is null or subtwo.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subtwo.sub_id and nsub.sub_id=subtwo.user_id))\n" +
+            "and\n" +
+            "(\n" +
+            "\t(\n" +
+            "\t\tsub.sub_id=? or \n" +
+            "\t\t(\n" +
+            "\t\t\tsubtwo.sub_id=? and \n" +
+            "\t\t\t!(\n" +
+            "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=?) and\n" +
+            "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=? and nsub.sub_id=subscribes.sub_id)\n" +
+            "\t\t\t) and\n" +
+            "\t\t\t!(\n" +
+            "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=subscribes.user_id and nsub.sub_id=sub.sub_id) and \n" +
+            "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=subscribes.user_id)\n" +
+            "\t\t\t)\n" +
+            "\t\t)\n" +
+            "\t) and \n" +
+            "\t!(\n" +
+            "\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=subscribes.user_id and nsub.sub_id=?) and\n" +
+            "\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=? and nsub.sub_id=subscribes.user_id)\n" +
+            "\t)\n" +
+            ")\n" +
+            "order by (\n" +
+            "\tCASE\n" +
+            "\t\tWHEN subtwo.sub_id is null THEN 2\n" +
+            "\t\tELSE 3\n" +
+            "\tEND\n" +
+            "),subscribes.subscribe_id,sub.subscribe_id,subtwo.subscribe_id\n";
     public static String selectPublicChatAvatar(){
         return "left join files as public_avatar on(\n" +
                 "\t(\n" +
@@ -729,9 +734,9 @@ public class Statement {
     public static String checkPostLike="SELECT user_posts.status,user_posts.user_id,\n" +
             "(select count(post_likes.user_post_id) from post_likes where post_likes.user_post_id=user_posts.user_post_id and post_likes.user_id=?) as my_like\n" +
             "FROM user_posts where user_posts.user_post_id=?";
-    public static String selectSub(String column1,String column2,boolean my_sub){
-        String str="SELECT subscribes.subscribe_id,users.user_id,users.first_name,users.last_name,user_avatar.url,users.confirm\n";
-        if(my_sub) str+=",(select count(sub.sub_id) from subscribes as sub where subscribes.sub_id=sub.sub_id and sub.user_id=?) as my_sub\n";
+    public static String selectSub(String column1,String column2,boolean statistic){
+        String str="SELECT users.user_id,users.first_name,users.last_name,user_avatar.url,users.confirm\n";
+        if(statistic) str+=",subscribes.subscribe_id,(select count(sub.sub_id) from subscribes as sub where subscribes.sub_id=sub.sub_id and sub.user_id=?) as my_sub\n";
         str+="FROM subscribes\n" +
                 "inner join users on(subscribes."+column1+"=users.user_id)\n" +
                 selectUserAvatar()+

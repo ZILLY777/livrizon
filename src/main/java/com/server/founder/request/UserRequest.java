@@ -23,6 +23,42 @@ import java.util.Objects;
 import static com.server.founder.function.Function.connect;
 
 public class UserRequest {
+    public static ResponseEntity<?> getRelationWithUser(String auth,int user_id){
+        ResponseEntity<?> response;
+        int owner_id=JwtUtil.extractId(auth);
+        if(user_id!=owner_id){
+            try {
+                Connection connection=Function.connect();
+                PreparedStatement getRelationWithUser=connection.prepareStatement(Statement.getRelationWithUser);
+                getRelationWithUser.setInt(1,user_id);
+                getRelationWithUser.setInt(2,user_id);
+                getRelationWithUser.setInt(3,user_id);
+                getRelationWithUser.setInt(4,owner_id);
+                getRelationWithUser.setInt(5,user_id);
+                getRelationWithUser.setInt(6,user_id);
+                getRelationWithUser.setInt(7,user_id);
+                getRelationWithUser.setInt(8,user_id);
+                getRelationWithUser.setInt(9,user_id);
+                getRelationWithUser.setInt(10,user_id);
+                ResultSet resultSet=getRelationWithUser.executeQuery();
+                List<List<UserProfile>> list=new ArrayList<>();
+                while (resultSet.next()){
+                    List<UserProfile> users=new ArrayList<>();
+                    users.add(new UserProfile(resultSet, TableName.user_one,TableName.user_one_avatar));
+                    if(resultSet.getObject(Function.concat(TableName.user_two,Column.user_id))!=null)
+                        users.add(new UserProfile(resultSet, TableName.user_two,TableName.user_two_avatar));
+                    list.add(users);
+                }
+                response = ResponseEntity.ok().body(list);
+                connection.close();
+            } catch (SQLException e){
+                System.out.println(e);
+                response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
+            }
+        }
+        else response = ResponseEntity.badRequest().body(new Response(ResponseState.YOURSELF));
+        return response;
+    }
     public static ResponseEntity<?> deleteUserAvatar(String auth,int file_id){
         try {
             Connection connection=Function.connect();
@@ -129,10 +165,8 @@ public class UserRequest {
                 setTags.setInt(i*2+1,owner_id);
                 setTags.setInt(i*2+2,interests_id.get(i));
             }
-            System.out.println(setTags);
-            response=ResponseEntity.ok(new Response(ResponseState.SUCCESS));
-            System.out.println(response);
             setTags.execute();
+            response=ResponseEntity.ok(new Response(ResponseState.SUCCESS));
             connection.close();
         } catch (Exception e){
             response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));

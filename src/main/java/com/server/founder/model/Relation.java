@@ -14,7 +14,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 public class Relation {
     boolean my_sub;
     boolean it_sub;
-    Link connection;
+    Object gen;
 
     public Relation() {
     }
@@ -22,6 +22,6 @@ public class Relation {
     public Relation(ResultSet resultSet) throws SQLException {
         this.my_sub = resultSet.getBoolean(Column.my_sub);
         this.it_sub = resultSet.getBoolean(Column.it_sub);
-        if(resultSet.getObject(Column.gen)!=null) this.connection = new Link(resultSet);
+        this.gen = resultSet.getInt(Column.gen);
     }
 }

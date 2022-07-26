@@ -20,6 +20,10 @@ public class TableName {
     public static String forward_from= "forward_from";
     public static String user_posts= "user_posts";
     public static String polls= "polls";
+    public static String user_one_avatar= "user_one_avatar";
+    public static String user_two_avatar= "user_two_avatar";
+    public static String user_one= "user_one";
+    public static String user_two= "user_two";
     public static String login= "login";
     public static String user_poll= "user_poll";
     public static String subscribes="subscribes";
