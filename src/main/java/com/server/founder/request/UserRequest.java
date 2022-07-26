@@ -207,16 +207,15 @@ public class UserRequest {
     }
     public static PageInformation findPageInformation(Object owner_id, int user_id, Connection connection) throws SQLException {
         PreparedStatement selectPageInformation=connection.prepareStatement(Statement.selectPageInformation);
-        selectPageInformation.setInt(1,user_id);
-        selectPageInformation.setInt(2,user_id);
+        selectPageInformation.setObject(1,owner_id);
+        selectPageInformation.setObject(2,owner_id);
         selectPageInformation.setInt(3,user_id);
         selectPageInformation.setInt(4,user_id);
-        selectPageInformation.setInt(5,user_id);
-        selectPageInformation.setObject(6,owner_id);
+        selectPageInformation.setObject(5,owner_id);
+        selectPageInformation.setInt(6,user_id);
         selectPageInformation.setInt(7,user_id);
-        selectPageInformation.setObject(8,user_id);
+        selectPageInformation.setInt(8,user_id);
         selectPageInformation.setInt(9,user_id);
-        selectPageInformation.setInt(10,user_id);
         ResultSet resultSet=selectPageInformation.executeQuery();
         if(resultSet.next()) return new PageInformation(resultSet);
         else return null;
