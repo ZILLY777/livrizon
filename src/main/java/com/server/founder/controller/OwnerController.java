@@ -73,6 +73,13 @@ public class OwnerController {
         if(tokenState == ResponseState.ACCESS) return UserRequest.setMyInterests(auth,interests_id);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
+
+    @PutMapping("/my_interests")
+    ResponseEntity<?> putHobbiesId(@RequestHeader String auth, @RequestParam List<Integer> interests_id, @RequestParam(required = false) String delete){
+        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
+        if(tokenState == ResponseState.ACCESS) return UserRequest.changeMyInterests(auth,interests_id,delete);
+        return ResponseEntity.badRequest().body(new Response(tokenState));
+    }
     @GetMapping("/relation/{user_id}")
     ResponseEntity<?> getRelationWithUser(@RequestHeader String auth,@PathVariable int user_id,@RequestParam(required = false) String next){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);

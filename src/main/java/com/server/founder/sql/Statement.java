@@ -441,7 +441,14 @@ public class Statement {
                 orderByDesc(Function.concat(TableName.subfour,Column.subscribe_id))+
                 limit(25);
     }
-    public static String setMyInterest="insert into founder.user_interests(user_id,interest_id) values";
+    public static String setMyInterest="insert into founder.user_interests (user_id,interest_id) (select ?,interests.interest_id from founder.interests\n" +
+            "where interests.interest_id in ";
+    public static String changeMyInterest="insert into user_interests (user_id,interest_id) (select ?,interests.interest_id from interests\n" +
+            "where interests.interest_id in \n";
+    public static String getChangeMyInterest2=
+            " and not (select count(user_interests.interest_id) from user_interests where user_interests.user_id=? and user_interests.interest_id=interests.interest_id))";
+    public static String delMyIterest="DELETE FROM founder.user_interests \n" +
+            "WHERE user_id=? and interest_id IN ";
     public static String getRelationWithUser(Object next){
         return "select user_one.user_id,user_one.first_name,user_one.last_name,user_one.confirm,user_one_avatar.url,\n" +
                 "user_two.user_id,user_two.first_name,user_two.last_name,user_two.confirm,user_two_avatar.url\n" +

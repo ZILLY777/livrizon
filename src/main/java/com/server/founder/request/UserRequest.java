@@ -162,13 +162,45 @@ public class UserRequest {
         ResponseEntity<?> response;
         try {
             Connection connection=Function.connect();
-            PreparedStatement setTags=connection.prepareStatement(Statement.setMyInterest+Function.toValue(interests_id.size()));
+            PreparedStatement setTags=connection.prepareStatement(Statement.setMyInterest+Function.toValues2(interests_id.size()));
+            setTags.setInt(1,owner_id);
             for (int i=0;i<interests_id.size();i++){
-                setTags.setInt(i*2+1,owner_id);
-                setTags.setInt(i*2+2,interests_id.get(i));
+                setTags.setInt(i+2,interests_id.get(i));
             }
+
             setTags.execute();
             response=ResponseEntity.ok(new Response(ResponseState.SUCCESS));
+            connection.close();
+        } catch (Exception e){
+            response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
+        }
+        return response;
+    }
+
+
+    public static ResponseEntity<?> changeMyInterests(String auth,List<Integer> interests_id, String delete){
+        int owner_id=JwtUtil.extractId(auth);
+        ResponseEntity<?> response;
+        try {
+            Connection connection=Function.connect();
+            if(delete==null){
+                PreparedStatement setTags=connection.prepareStatement(Statement.changeMyInterest+Function.toValues(interests_id.size())+Statement.getChangeMyInterest2);
+                setTags.setInt(1,owner_id);
+                for (int i=0;i<interests_id.size();i++){
+                    setTags.setInt(i+2,interests_id.get(i));
+                }
+                setTags.setInt(interests_id.size()+2,owner_id);
+                setTags.execute();
+                response=ResponseEntity.ok(new Response(ResponseState.SUCCESS));
+            }else{
+                PreparedStatement delTags=connection.prepareStatement((Statement.delMyIterest+Function.toValues(interests_id.size())));
+                delTags.setInt(1,owner_id);
+                for (int i=0;i<interests_id.size();i++){
+                    delTags.setInt(i+2,interests_id.get(i));
+                }
+                delTags.execute();
+                response=ResponseEntity.ok(new Response(ResponseState.SUCCESS ));
+            }
             connection.close();
         } catch (Exception e){
             response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
