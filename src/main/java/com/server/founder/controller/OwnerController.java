@@ -74,9 +74,9 @@ public class OwnerController {
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
     @GetMapping("/relation/{user_id}")
-    ResponseEntity<?> getRelationWithUser(@RequestHeader String auth,@PathVariable int user_id){
+    ResponseEntity<?> getRelationWithUser(@RequestHeader String auth,@PathVariable int user_id,@RequestParam(required = false) String next){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-        if(tokenState == ResponseState.ACCESS) return UserRequest.getRelationWithUser(auth,user_id);
+        if(tokenState == ResponseState.ACCESS) return UserRequest.getRelationWithUser(auth,user_id,next);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
 }

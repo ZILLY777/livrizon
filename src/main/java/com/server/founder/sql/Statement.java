@@ -295,10 +295,11 @@ public class Statement {
             "name varchar(36) unique,\n" +
             "index(name)\n" +
             ")";
-    public static String insertInterests="insert into interests(name) value('Startup'),('News'),('Investments'),('Business'),('Companies'),('Work'),('Finance'),('Networking'),('Small business'),('Service sector'),('Management'),('Trading'),('Politics'),('Real estate'),('Logistics'),('Advertising'),('Energetics'),('Design'),('Agriculture'),('Construction'),('Education'),('Psychology'),('Jurisprudence'),('Technique'),('Architecture'),('Travels'),('Art'),('Innovation'),('Science'),('Medicine'),('Music'),('Nature'),('Photo'),('Movie'),('Animals'),('Transport'),('Sports'),('Media'),('Fashion'),('Food')\n";
+    public static String insertInterests="insert into interests(name) value('Startup'),('News'),('Investments'),('Business'),('Companies'),('Work'),('Finance'),('Networking'),('Small business'),('Service sector'),('Management'),('Trading'),('Politics'),('It'),('Real estate'),('Logistics'),('Advertising'),('Energetics'),('Design'),('Agriculture'),('Construction'),('Education'),('Psychology'),('Jurisprudence'),('Technique'),('Architecture'),('Travels'),('Art'),('Innovation'),('Science'),('Medicine'),('Music'),('Nature'),('Photo'),('Movie'),('Animals'),('Transport'),('Sports'),('Media'),('Fashion'),('Food')\n";
     public static String createTableUserInterests="create table if not exists user_interests (\n" +
             "user_id int,\n" +
             "interest_id int,\n" +
+            "unique(user_id,interest_id),\n" +
             "foreign key (user_id) references users(user_id)\n" +
             "on delete restrict,\n" +
             "foreign key (interest_id) references interests(interest_id)\n" +
@@ -434,46 +435,49 @@ public class Statement {
                 limit(25);
     }
     public static String setMyInterest="insert into founder.user_interests(user_id,interest_id) values";
-    public static String getRelationWithUser="select user_one.user_id,user_one.first_name,user_one.last_name,user_one.confirm,user_one_avatar.url,\n" +
-            "user_two.user_id,user_two.first_name,user_two.last_name,user_two.confirm,user_two_avatar.url\n" +
-            "from subscribes\n" +
-            "left join subscribes as sub on(subscribes.sub_id=sub.user_id and subscribes.user_id!=sub.sub_id and subscribes.sub_id!=?)\n" +
-            "left join subscribes as subtwo on(sub.sub_id=subtwo.user_id and subscribes.user_id!=subtwo.sub_id and subscribes.sub_id!=subtwo.sub_id and sub.sub_id!=?)\n" +
-            "inner join users as user_one on(subscribes.sub_id=user_one.user_id)\n" +
-            "left join users as user_two on(if(sub.sub_id=?,null,sub.sub_id)=user_two.user_id)\n" +
-            selectUserAvatar(TableName.user_one_avatar,Function.concat(TableName.user_one,Column.user_id))+
-            selectUserAvatar(TableName.user_two_avatar,Function.concat(TableName.user_two,Column.user_id))+
-            "where subscribes.user_id=? and\n" +
-            "(select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=subscribes.user_id) and\n" +
-            "(sub.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=sub.user_id)) and\n" +
-            "(sub.sub_id is null or subtwo.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subtwo.sub_id and nsub.sub_id=subtwo.user_id))\n" +
-            "and\n" +
-            "(\n" +
-            "\t(\n" +
-            "\t\tsub.sub_id=? or \n" +
-            "\t\t(\n" +
-            "\t\t\tsubtwo.sub_id=? and \n" +
-            "\t\t\t!(\n" +
-            "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=?) and\n" +
-            "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=? and nsub.sub_id=subscribes.sub_id)\n" +
-            "\t\t\t) and\n" +
-            "\t\t\t!(\n" +
-            "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=subscribes.user_id and nsub.sub_id=sub.sub_id) and \n" +
-            "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=subscribes.user_id)\n" +
-            "\t\t\t)\n" +
-            "\t\t)\n" +
-            "\t) and \n" +
-            "\t!(\n" +
-            "\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=subscribes.user_id and nsub.sub_id=?) and\n" +
-            "\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=? and nsub.sub_id=subscribes.user_id)\n" +
-            "\t)\n" +
-            ")\n" +
-            "order by (\n" +
-            "\tCASE\n" +
-            "\t\tWHEN subtwo.sub_id is null THEN 2\n" +
-            "\t\tELSE 3\n" +
-            "\tEND\n" +
-            "),subscribes.subscribe_id,sub.subscribe_id,subtwo.subscribe_id\n";
+    public static String getRelationWithUser(Object next){
+        return "select user_one.user_id,user_one.first_name,user_one.last_name,user_one.confirm,user_one_avatar.url,\n" +
+                "user_two.user_id,user_two.first_name,user_two.last_name,user_two.confirm,user_two_avatar.url\n" +
+                "from subscribes\n" +
+                "left join subscribes as sub on(subscribes.sub_id=sub.user_id and subscribes.user_id!=sub.sub_id and subscribes.sub_id!=?)\n" +
+                "left join subscribes as subtwo on(sub.sub_id=subtwo.user_id and subscribes.user_id!=subtwo.sub_id and subscribes.sub_id!=subtwo.sub_id and sub.sub_id!=?)\n" +
+                "inner join users as user_one on(subscribes.sub_id=user_one.user_id)\n" +
+                "left join users as user_two on(if(sub.sub_id=?,null,sub.sub_id)=user_two.user_id)\n" +
+                selectUserAvatar(TableName.user_one_avatar,Function.concat(TableName.user_one,Column.user_id))+
+                selectUserAvatar(TableName.user_two_avatar,Function.concat(TableName.user_two,Column.user_id))+
+                "where subscribes.user_id=? and\n" +
+                "(select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=subscribes.user_id) and\n" +
+                "(sub.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=sub.user_id)) and\n" +
+                "(sub.sub_id is null or subtwo.sub_id is null or (select count(nsub.user_id) from subscribes as nsub where nsub.user_id=subtwo.sub_id and nsub.sub_id=subtwo.user_id))\n" +
+                "and\n" +
+                "(\n" +
+                "\t(\n" +
+                "\t\tsub.sub_id=? or \n" +
+                "\t\t(\n" +
+                "\t\t\tsubtwo.sub_id=? and \n" +
+                "\t\t\t!(\n" +
+                "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=?) and\n" +
+                "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=? and nsub.sub_id=subscribes.sub_id)\n" +
+                "\t\t\t) and\n" +
+                "\t\t\t!(\n" +
+                "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=subscribes.user_id and nsub.sub_id=sub.sub_id) and \n" +
+                "\t\t\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=subscribes.user_id)\n" +
+                "\t\t\t)\n" +
+                "\t\t)\n" +
+                "\t) and \n" +
+                "\t!(\n" +
+                "\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=subscribes.user_id and nsub.sub_id=?) and\n" +
+                "\t\t(SELECT count(subscribe_id) FROM subscribes as nsub where nsub.user_id=? and nsub.sub_id=subscribes.user_id)\n" +
+                "\t)\n" +
+                ")\n" +
+                "order by (\n" +
+                "\tCASE\n" +
+                "\t\tWHEN subtwo.sub_id is null THEN 2\n" +
+                "\t\tELSE 3\n" +
+                "\tEND\n" +
+                "),subscribes.subscribe_id,sub.subscribe_id,subtwo.subscribe_id\n"+
+                rangeLimit(next,25);
+    }
     public static String selectPublicChatAvatar(){
         return "left join files as public_avatar on(\n" +
                 "\t(\n" +

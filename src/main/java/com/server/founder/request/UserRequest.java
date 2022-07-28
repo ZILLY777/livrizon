@@ -23,13 +23,13 @@ import java.util.Objects;
 import static com.server.founder.function.Function.connect;
 
 public class UserRequest {
-    public static ResponseEntity<?> getRelationWithUser(String auth,int user_id){
+    public static ResponseEntity<?> getRelationWithUser(String auth,int user_id,String next){
         ResponseEntity<?> response;
         int owner_id=JwtUtil.extractId(auth);
         if(user_id!=owner_id){
             try {
                 Connection connection=Function.connect();
-                PreparedStatement getRelationWithUser=connection.prepareStatement(Statement.getRelationWithUser);
+                PreparedStatement getRelationWithUser=connection.prepareStatement(Statement.getRelationWithUser(next));
                 getRelationWithUser.setInt(1,user_id);
                 getRelationWithUser.setInt(2,user_id);
                 getRelationWithUser.setInt(3,user_id);
@@ -40,6 +40,7 @@ public class UserRequest {
                 getRelationWithUser.setInt(8,user_id);
                 getRelationWithUser.setInt(9,user_id);
                 getRelationWithUser.setInt(10,user_id);
+                if(next!=null) getRelationWithUser.setObject(11,Integer.parseInt(next));
                 ResultSet resultSet=getRelationWithUser.executeQuery();
                 List<List<UserProfile>> list=new ArrayList<>();
                 while (resultSet.next()){
