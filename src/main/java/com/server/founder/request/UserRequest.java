@@ -53,7 +53,6 @@ public class UserRequest {
                 response = ResponseEntity.ok().body(list);
                 connection.close();
             } catch (SQLException e){
-                System.out.println(e);
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
             }
         }
@@ -211,7 +210,7 @@ public class UserRequest {
         ResponseEntity<?> response;
         try {
             Connection connection=Function.connect();
-            response=ResponseEntity.ok().body(findPreviewFilesFromPage(user_id,last,15,connection));
+            response=ResponseEntity.ok().body(findFilesFromPage(user_id,last,connection));
             connection.close();
         } catch (SQLException e){
             response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
@@ -225,10 +224,10 @@ public class UserRequest {
         resultSet.next();
         return resultSet.getInt(Column.number);
     }
-    public static List<FileView> findPreviewFilesFromPage(int user_id,Object last,int limit,Connection connection) throws SQLException {
+    public static List<FileView> findFilesFromPage(int user_id,Object last,Connection connection) throws SQLException {
         PreparedStatement selectPreviewFileOfPage=connection.prepareStatement(Statement.selectPreviewFilesOfPage+
                 Statement.andFindByLess(Column.post_file_id,last)+
-                Statement.limit(limit)
+                Statement.limit(15)
         );
         selectPreviewFileOfPage.setInt(1,user_id);
         ResultSet resultSet=selectPreviewFileOfPage.executeQuery();

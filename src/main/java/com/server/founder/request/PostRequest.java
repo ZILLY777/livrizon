@@ -319,7 +319,6 @@ public class PostRequest {
         try {
             return ResponseEntity.ok().body(Request.getPostsBy(user_id,tableName,by,column,item,last));
         } catch (SQLException e){
-            System.out.println(e);
             return ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
     }
@@ -342,7 +341,6 @@ public class PostRequest {
             else response=ResponseEntity.badRequest().body(new Response(status));
             connection.close();
         } catch (SQLException e){
-            System.out.println(e);
             response=ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
         return response;

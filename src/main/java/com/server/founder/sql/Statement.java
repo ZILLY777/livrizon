@@ -381,22 +381,21 @@ public class Statement {
                 ")\n";
     }
     public  static String getMutualConnection(Object last){
-        return "SELECT subscribes.subscribe_id,users.user_id,first_name, last_name,user_avatar.url,users.confirm\n" +
+        return "SELECT subscribes.subscribe_id,users.user_id,users.first_name,users.last_name,users.confirm,user_avatar.url\n" +
                 "FROM founder.subscribes\n" +
-                "INNER join(SELECT sub_id FROM founder.subscribes WHERE user_id=?) AS SUB\n" +
-                "ON SUB.sub_id=founder.subscribes.sub_id\n" +
-                "INNER JOIN founder.users\n" +
-                "ON users.user_id = subscribes.sub_id\n" +
-                "INNER JOIN subscribes as connection on(subscribes.sub_id=connection.user_id and subscribes.user_id=connection.sub_id)\n"+
+                "inner join subscribes as sub on (sub.sub_id=subscribes.sub_id)\n" +
+                "inner join users on(subscribes.sub_id=users.user_id)\n"+
                 selectUserAvatar()+
-                "WHERE founder.subscribes.user_id=?\n"+
+                "WHERE subscribes.user_id=? and sub.user_id=? and \n" +
+                "(select count(nsub.subscribe_id) from subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=subscribes.user_id) and\n" +
+                "(select count(nsub.subscribe_id) from subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=sub.user_id)\n" +
                 andFindByLess(Column.subscribe_id,last)+
                 orderByDesc(Function.concat(TableName.subscribes,Column.subscribe_id))+
                 limit(25);
     }
 
     public  static String getHandshakeFirstGen(Object last){
-        return "SELECT subscribes.subscribe_id, founder.users.user_id, founder.users.first_name, founder.users.last_name, founder.users.confirm, \n" +
+        return "SELECT subscribes.subscribe_id,users.user_id,users.first_name,users.last_name,users.confirm, \n" +
                 "user_avatar.url, exists(SELECT NSUB.user_id from founder.subscribes as NSUB where NSUB.user_id=subscribes.user_id and subscribes.sub_id=NSUB.sub_id ) AS my_sub\n" +
                 "from founder.subscribes\n" +
                 "INNER JOIN founder.subscribes AS sub\n" +
@@ -490,7 +489,7 @@ public class Statement {
                 "\t\tELSE 3\n" +
                 "\tEND\n" +
                 "),subscribes.subscribe_id,sub.subscribe_id,subtwo.subscribe_id\n"+
-                rangeLimit(next,25);
+                rangeLimit(next,15);
     }
     public static String selectPublicChatAvatar(){
         return "left join files as public_avatar on(\n" +
@@ -719,6 +718,66 @@ public class Statement {
             "where files.url=? and files.status=true";
     public static String putLike(String tableName,String column){
         return "insert into "+tableName+" ("+column+",user_id) values(?,?)";
+    }
+    public static String getRecommendationUsers(Object next){
+        return "select * from (" +
+                "select users.user_id,users.first_name,users.last_name,user_avatar.url,users.confirm,\n" +
+                "count(recommendation_interests.interest_id)/(select count(user_interests.interest_id) from user_interests where user_interests.user_id=recommendation_interests.user_id) as coincidence,\n" +
+                "(SELECT count(subscribes.sub_id)\n" +
+                "FROM founder.subscribes\n" +
+                "INNER join subscribes as sub on (sub.sub_id=subscribes.sub_id)\n" +
+                "WHERE subscribes.user_id=my_interests.user_id and sub.user_id=users.user_id and \n" +
+                "(select count(nsub.subscribe_id) from subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=subscribes.user_id) and\n" +
+                "(select count(nsub.subscribe_id) from subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=sub.user_id)\n" +
+                "order by subscribes.subscribe_id desc) as mutual\n" +
+                "from user_interests as my_interests\n" +
+                "inner join user_interests as recommendation_interests on(my_interests.interest_id=recommendation_interests.interest_id)\n" +
+                "inner join users on(recommendation_interests.user_id=users.user_id)\n" +
+                selectUserAvatar()+
+                "where my_interests.user_id=? and recommendation_interests.user_id!=my_interests.user_id\n" +
+                "group by recommendation_interests.user_id\n" +
+                "having coincidence>=0.5\n" +
+                "order by coincidence desc,count(recommendation_interests.interest_id) desc,users.confirm,users.user_id\n" +
+                rangeLimit(next,15)+
+                ") as users\n" +
+                "order by rand()\n";
+    }
+    public static String getPossibleUsers(Object next){
+        return "select * from (" +
+                "select users.user_id,users.first_name,users.last_name,users.confirm,user_avatar.url,count(users.user_id) as mutual\n" +
+                "from subscribes\n" +
+                "inner join subscribes as sub on(sub.user_id=subscribes.sub_id and sub.sub_id=subscribes.user_id)\n" +
+                "inner join subscribes as subtwo on(subscribes.sub_id=subtwo.user_id)\n" +
+                "inner join subscribes as subthree on(subthree.user_id=subtwo.sub_id and subthree.sub_id=subtwo.user_id)\n" +
+                "inner join users on (subtwo.sub_id=users.user_id)\n" +
+                selectUserAvatar()+
+                "where subscribes.user_id=? and subtwo.sub_id!=subscribes.user_id and \n" +
+                "!(SELECT count(nsub.user_id) from founder.subscribes as nsub where NSUB.user_id=founder.subscribes.user_id and subtwo.sub_id=nsub.sub_id)\n" +
+                "GROUP by users.user_id\n" +
+                "order by count(users.user_id) desc,users.confirm,users.user_id\n" +
+                rangeLimit(next,15)+
+                ") as users\n" +
+                "order by rand()\n";
+    }
+    public static String getPopularUsers(Object next){
+        return "select * from(\n" +
+                "select users.user_id,users.first_name,users.last_name,users.confirm,user_avatar.url,\n" +
+                "(SELECT count(subscribes.sub_id) as mutual\n" +
+                "FROM founder.subscribes\n" +
+                "INNER join subscribes as sub on (sub.sub_id=subscribes.sub_id)\n" +
+                "WHERE subscribes.user_id=? and sub.user_id=users.user_id and \n" +
+                "(select count(nsub.subscribe_id) from subscribes as nsub where nsub.user_id=subscribes.sub_id and nsub.sub_id=subscribes.user_id) and\n" +
+                "(select count(nsub.subscribe_id) from subscribes as nsub where nsub.user_id=sub.sub_id and nsub.sub_id=sub.user_id)\n" +
+                "order by subscribes.subscribe_id desc) as mutual\n" +
+                "from subscribes\n" +
+                "inner join users on(subscribes.sub_id=users.user_id)\n" +
+                selectUserAvatar() +
+                "where users.user_id!=? and !(select count(subscribes.subscribe_id) from subscribes as nsub where nsub.user_id=? and nsub.sub_id=subscribes.sub_id)\n" +
+                "group by subscribes.sub_id\n" +
+                "order by count(subscribes.sub_id) desc\n" +
+                rangeLimit(next,15)+
+                ") as users\n" +
+                "order by rand()";
     }
     public static String checkSubscribe="SELECT users.status,(select count(subscribes.user_id) from subscribes where subscribes.user_id=? and subscribes.sub_id=users.user_id) as my_subscribe \n" +
             "FROM users\n" +

@@ -138,13 +138,13 @@ public class SubscribeRequest {
         return response;
     }
 
-    public static ResponseEntity<?> getHandshakes(String auth, int generation, Object last){
+    public static ResponseEntity<?> getHandshakes(String auth, int handshakes, Object last){
         ResponseEntity<?> response;
         int owner_id=JwtUtil.extractId(auth);
             try {
                 Connection connection = Function.connect();
 
-                PreparedStatement getHandShake=connection.prepareStatement(switch(generation){
+                PreparedStatement getHandShake=connection.prepareStatement(switch(handshakes){
                     case 1 -> Statement.getHandshakeFirstGen(last);
                     case 2 -> Statement.getHandshakeSecondGen(last);
                     default -> Statement.getHandshakeThirdGen(last);

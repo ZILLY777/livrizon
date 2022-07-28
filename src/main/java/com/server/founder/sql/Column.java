@@ -6,6 +6,7 @@ public class Column {
     public static String my_sub= "my_sub";
     public static String it_sub= "it_sub";
     public static String gen= "gen";
+    public static String mutual= "mutual";
     public static String vote_id= "vote_id";
     public static String message_id= "message_id";
     public static String post_file_id= "post_file_id";

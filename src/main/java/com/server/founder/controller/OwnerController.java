@@ -60,10 +60,10 @@ public class OwnerController {
         if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getMutualConnection(auth,user_id,last);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
-    @GetMapping("/handshakes/{generation}")
-    ResponseEntity<?> getHandshakesSubscribe(@RequestHeader String auth,@PathVariable int generation, @RequestParam(required = false) String last){
+    @GetMapping("/my_connection")
+    ResponseEntity<?> getHandshakesSubscribe(@RequestHeader String auth,@RequestParam int handshakes, @RequestParam(required = false) String last){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-        if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getHandshakes(auth, generation, last);
+        if(tokenState == ResponseState.ACCESS) return SubscribeRequest.getHandshakes(auth, handshakes, last);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
 
