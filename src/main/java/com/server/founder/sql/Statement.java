@@ -232,25 +232,25 @@ public class Statement {
             "\ton delete restrict\n" +
             ")";
     public static String createTableLogin="create table if not exists login (" +
-            "   username varchar(40) primary key not null," +
-            "   code smallint," +
-            "   registration enum('PHONE','MAIL','LOGIN')"+
+            "username varchar(40) primary key not null," +
+            "code smallint," +
+            "registration enum('PHONE','MAIL','LOGIN')"+
             ")";
     public static String createTableUsers="create table if not exists users(" +
-            "   user_id int primary key not null," +
-            "   username varchar(45) unique  not null," +
-            "   index(username)," +
-            "   password varchar(40)," +
-            "   status boolean default true," +
-            "   created datetime default now()," +
-            "   role enum('USER','ADMIN','COMPANY','GROUP','CHANNEL','INFORMATION','SUPPORT') default 'USER'," +
-            "   registration enum('PHONE','MAIL','LOGIN')," +
-            "   first_name varchar(20)," +
-            "   last_name varchar(20)," +
-            "   confirm boolean default false,"+
-            "   birthday datetime,"+
-            "   city text,"+
-            "   description text"+
+            "user_id int primary key not null," +
+            "username varchar(45) unique  not null," +
+            "index(username)," +
+            "password varchar(40)," +
+            "status boolean default true," +
+            "created datetime default now()," +
+            "role enum('USER','ADMIN','COMPANY','GROUP','CHANNEL','INFORMATION','SUPPORT') default 'USER'," +
+            "registration enum('PHONE','MAIL','LOGIN')," +
+            "first_name varchar(20)," +
+            "last_name varchar(20)," +
+            "confirm boolean default false,"+
+            "birthday datetime,"+
+            "city text,"+
+            "description text"+
             ")";
     public static String createTableLineUsers="create table if not exists line_users(\n" +
             "\tvote_id int primary key auto_increment not null,\n" +
@@ -274,16 +274,16 @@ public class Statement {
             "on delete restrict" +
             ")";
     public static String createTableFiles="create table  if not exists files(" +
-            "   file_id int primary key auto_increment not null," +
-            "   url varchar(36) unique,"+
-            "   index(url)," +
-            "   contentType text," +
-            "   size long," +
-            "   status boolean default true," +
-            "   user_id int,"+
-            "   byte LONGBLOB," +
-            "   foreign key (user_id) references users(user_id)" +
-            "   on delete restrict" +
+            "file_id int primary key auto_increment not null," +
+            "url varchar(36) unique,"+
+            "index(url)," +
+            "contentType text," +
+            "size long," +
+            "status boolean default true," +
+            "user_id int,"+
+            "byte LONGBLOB," +
+            "foreign key (user_id) references users(user_id)" +
+            "on delete restrict" +
             ")";
     public static String createTablePublicAvatars="create table if not exists public_avatars(\n" +
             "avatar_id int primary key auto_increment not null,\n" +
@@ -295,7 +295,6 @@ public class Statement {
             "name varchar(36) unique,\n" +
             "index(name)\n" +
             ")";
-    public static String insertInterests="insert into interests(name) value('Startup'),('News'),('Investments'),('Business'),('Companies'),('Work'),('Finance'),('Networking'),('Small business'),('Service sector'),('Management'),('Trading'),('Politics'),('It'),('Real estate'),('Logistics'),('Advertising'),('Energetics'),('Design'),('Agriculture'),('Construction'),('Education'),('Psychology'),('Jurisprudence'),('Technique'),('Architecture'),('Travels'),('Art'),('Innovation'),('Science'),('Medicine'),('Music'),('Nature'),('Photo'),('Movie'),('Animals'),('Transport'),('Sports'),('Media'),('Fashion'),('Food')\n";
     public static String createTableUserInterests="create table if not exists user_interests (\n" +
             "user_id int,\n" +
             "interest_id int,\n" +
@@ -305,6 +304,15 @@ public class Statement {
             "foreign key (interest_id) references interests(interest_id)\n" +
             "on delete restrict\n" +
             ")";
+    public static String createTableUserPreviewAvatar="create table if not exists user_preview_avatar(\n" +
+            "user_id int unique,\n" +
+            "file_id int,\n" +
+            "foreign key (user_id) references users(user_id)\n" +
+            "on delete restrict,\n" +
+            "foreign key (file_id) references files(file_id)\n" +
+            "on delete restrict\n" +
+            ")";
+    public static String insertInterests="insert into interests(name) value('Startup'),('News'),('Investments'),('Business'),('Companies'),('Work'),('Finance'),('Networking'),('Small business'),('Service sector'),('Management'),('Trading'),('Politics'),('It'),('Real estate'),('Logistics'),('Advertising'),('Energetics'),('Design'),('Agriculture'),('Construction'),('Education'),('Psychology'),('Jurisprudence'),('Technique'),('Architecture'),('Travels'),('Art'),('Innovation'),('Science'),('Medicine'),('Music'),('Nature'),('Photo'),('Movie'),('Animals'),('Transport'),('Sports'),('Media'),('Fashion'),('Food')\n";
     public static String selectMultiplePollLines="SELECT poll_lines.line_id FROM polls\n" +
             "inner join poll_lines on (polls.poll_id=poll_lines.poll_id)\n" +
             "where polls.poll_id=? and polls.type='MULTIPLE'";
@@ -367,9 +375,8 @@ public class Statement {
         return "left join founder.files as "+tableName+" on(\n" +
                 "\t(\n" +
                 "\t\tSELECT file_id\n" +
-                "\t\tFROM founder.user_avatars\n" +
-                "\t\twhere user_avatars.user_id="+column+"\n" +
-                "\t\torder by user_avatars.avatar_id desc limit 1\n" +
+                "\t\tFROM founder.user_preview_avatar\n" +
+                "\t\twhere user_preview_avatar.user_id="+column+"\n" +
                 "\t)="+tableName+".file_id\n" +
                 ")\n";
     }
@@ -757,6 +764,7 @@ public class Statement {
         return "insert into "+tableName+" ("+column+",user_id,text) values(?,?,?)";
     }
     public static String insertAvatar="insert into user_avatars (user_id,file_id) values(?,?)";
+    public static String insertPreviewAvatar="replace into user_preview_avatar (user_id,file_id) values(?,?)";
     public static String selectNumberOfFileFromPage="SELECT count(post_files.post_file_id) as number\n" +
             "FROM user_posts\n" +
             "inner join post_files on(user_posts.post_id=post_files.post_id)\n" +

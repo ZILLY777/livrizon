@@ -156,6 +156,8 @@ public class Request {
         PreparedStatement createTablePostComments=connection.prepareStatement(Statement.createTablePostComments);
         PreparedStatement createTableFileComment=connection.prepareStatement(Statement.createTableFileComment);
         PreparedStatement createTableUserAvatars=connection.prepareStatement(Statement.createTableUserAvatars);
+        PreparedStatement createTableUserPreviewAvatar=connection.prepareStatement(Statement.createTableUserPreviewAvatar);
+        PreparedStatement createTablePublicAvatars=connection.prepareStatement(Statement.createTablePublicAvatars);
         PreparedStatement createTableLineUsers=connection.prepareStatement(Statement.createTableLineUsers);
         PreparedStatement createTableChats=connection.prepareStatement(Statement.createTableChats);
         PreparedStatement createTablePrivetChat=connection.prepareStatement(Statement.createTablePrivetChat);
@@ -166,7 +168,6 @@ public class Request {
         PreparedStatement createTableMessageFiles=connection.prepareStatement(Statement.createTableMessageFiles);
         PreparedStatement createTableMembers=connection.prepareStatement(Statement.createTableMembers);
         PreparedStatement createTableUserConnection=connection.prepareStatement(Statement.createTableUserConnection);
-        PreparedStatement createTablePublicAvatars=connection.prepareStatement(Statement.createTablePublicAvatars);
         PreparedStatement createTableInterests=connection.prepareStatement(Statement.createTableInterests);
         PreparedStatement createTableUserInterests=connection.prepareStatement(Statement.createTableUserInterests);
         createTableUsers.execute();
@@ -183,6 +184,8 @@ public class Request {
         createTablePostComments.execute();
         createTableFileComment.execute();
         createTableUserAvatars.execute();
+        createTableUserPreviewAvatar.execute();
+        createTablePublicAvatars.execute();
         createTableLineUsers.execute();
         createTableChats.execute();
         createTablePrivetChat.execute();
@@ -193,7 +196,6 @@ public class Request {
         createTableMessageFiles.execute();
         createTableMembers.execute();
         createTableUserConnection.execute();
-        createTablePublicAvatars.execute();
         createTableInterests.execute();
         createTableUserInterests.execute();
         connection.close();

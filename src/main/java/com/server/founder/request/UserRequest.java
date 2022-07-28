@@ -113,13 +113,14 @@ public class UserRequest {
         }
         return response;
     }
-    public static ResponseEntity<?> loadAvatar(String auth, MultipartFile file){
+    public static ResponseEntity<?> loadAvatar(String auth, MultipartFile file, MultipartFile preview){
         ResponseEntity<?> response;
-        if(Objects.requireNonNull(file.getContentType()).substring(0,5).equals(Constant.image)){
+        if(file.getContentType().substring(0,5).equals(Constant.image) && preview.getContentType().substring(0,5).equals(Constant.image)){
             try {
                 Connection connection=Function.connect();
                 int user_id=JwtUtil.extractId(auth);
                 FileRequest.loadAvatar(user_id, FileRequest.loadFile(file,true,user_id,connection),connection);
+                FileRequest.loadPreviewAvatar(user_id, FileRequest.loadFile(preview,true,user_id,connection),connection);
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.SUCCESS));
                 connection.close();
             } catch (SQLException e){
