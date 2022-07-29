@@ -177,32 +177,40 @@ public class UserRequest {
     }
 
 
-    public static ResponseEntity<?> changeMyInterests(String auth,List<Integer> interests_id, String delete){
+    public static ResponseEntity<?> changeMyInterests(String auth,List<Integer> interests_id, List<Integer> delete){
         int owner_id=JwtUtil.extractId(auth);
-        ResponseEntity<?> response;
+        ResponseEntity<?> response =null ;
         try {
             Connection connection=Function.connect();
-            if(delete==null){
-                PreparedStatement setTags=connection.prepareStatement(Statement.changeMyInterest+Function.toValues(interests_id.size())+Statement.getChangeMyInterest2);
+            if(interests_id!=null){
+                PreparedStatement setTags=connection.prepareStatement(Statement.setMyInterest+Function.toValues(interests_id.size())+Statement.getChangeMyInterest2);
                 setTags.setInt(1,owner_id);
                 for (int i=0;i<interests_id.size();i++){
                     setTags.setInt(i+2,interests_id.get(i));
                 }
                 setTags.setInt(interests_id.size()+2,owner_id);
+                System.out.println(setTags);
                 setTags.execute();
                 response=ResponseEntity.ok(new Response(ResponseState.SUCCESS));
-            }else{
-                PreparedStatement delTags=connection.prepareStatement((Statement.delMyIterest+Function.toValues(interests_id.size())));
+            }
+            if (delete!=null){
+                PreparedStatement delTags=connection.prepareStatement((Statement.delMyIterest+Function.toValues(delete.size())));
                 delTags.setInt(1,owner_id);
-                for (int i=0;i<interests_id.size();i++){
-                    delTags.setInt(i+2,interests_id.get(i));
+                for (int i=0;i<delete.size();i++){
+                    delTags.setInt(i+2, delete.get(i));
                 }
+                System.out.println(delTags);
                 delTags.execute();
                 response=ResponseEntity.ok(new Response(ResponseState.SUCCESS ));
             }
             connection.close();
+
         } catch (Exception e){
             response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
+
+        }
+        if (response==(null)){
+            response=ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
         return response;
     }

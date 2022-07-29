@@ -442,8 +442,6 @@ public class Statement {
     }
     public static String setMyInterest="insert into founder.user_interests (user_id,interest_id) (select ?,interests.interest_id from founder.interests\n" +
             "where interests.interest_id in ";
-    public static String changeMyInterest="insert into user_interests (user_id,interest_id) (select ?,interests.interest_id from interests\n" +
-            "where interests.interest_id in \n";
     public static String getChangeMyInterest2=
             " and not (select count(user_interests.interest_id) from user_interests where user_interests.user_id=? and user_interests.interest_id=interests.interest_id))";
     public static String delMyIterest="DELETE FROM founder.user_interests \n" +
