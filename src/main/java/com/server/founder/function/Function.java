@@ -62,17 +62,6 @@ public class Function {
         str.append(")");
         return str.toString();
     }
-    public static String toValues2(int number) {
-        StringBuilder str= new StringBuilder();
-        str.append("(");
-        for (int i=0;i<number;i++){
-            if(i!=0) str.append(",");
-            str.append("?");
-        }
-        str.append(")");
-        str.append(")");
-        return str.toString();
-    }
     public static long toMB(long space){
         return space*1024*1024;
     }

@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.server.founder.function.Function.connect;
 
@@ -156,18 +157,18 @@ public class UserRequest {
         }
         return response;
     }
-    public static ResponseEntity<?> setMyInterests(String auth,List<Integer> interests_id){
+    public static ResponseEntity<?> setMyInterests(String auth,List<Integer> append){
         int owner_id=JwtUtil.extractId(auth);
         ResponseEntity<?> response;
         try {
             Connection connection=Function.connect();
-            PreparedStatement setTags=connection.prepareStatement(Statement.setMyInterest+Function.toValues2(interests_id.size()));
-            setTags.setInt(1,owner_id);
-            for (int i=0;i<interests_id.size();i++){
-                setTags.setInt(i+2,interests_id.get(i));
+            append=append.stream().distinct().collect(Collectors.toList());
+            PreparedStatement setMyInterest=connection.prepareStatement(Statement.setMyInterest(Function.toValues(append.size())));
+            setMyInterest.setInt(1,owner_id);
+            for (int i=0;i<append.size();i++){
+                setMyInterest.setInt(i+2,append.get(i));
             }
-
-            setTags.execute();
+            setMyInterest.execute();
             response=ResponseEntity.ok(new Response(ResponseState.SUCCESS));
             connection.close();
         } catch (Exception e){
@@ -177,41 +178,40 @@ public class UserRequest {
     }
 
 
-    public static ResponseEntity<?> changeMyInterests(String auth,List<Integer> interests_id, List<Integer> delete){
-        int owner_id=JwtUtil.extractId(auth);
-        ResponseEntity<?> response =null ;
-        try {
-            Connection connection=Function.connect();
-            if(interests_id!=null){
-                PreparedStatement setTags=connection.prepareStatement(Statement.setMyInterest+Function.toValues(interests_id.size())+Statement.getChangeMyInterest2);
-                setTags.setInt(1,owner_id);
-                for (int i=0;i<interests_id.size();i++){
-                    setTags.setInt(i+2,interests_id.get(i));
+    public static ResponseEntity<?> changeMyInterests(String auth,List<Integer> append, List<Integer> delete){
+        ResponseEntity<?> response;
+        if(append!=null || delete!=null){
+            try {
+                int owner_id=JwtUtil.extractId(auth);
+                Connection connection=Function.connect();
+                if(append!=null){
+                    append=append.stream().distinct().collect(Collectors.toList());
+                    PreparedStatement setMyInterest=connection.prepareStatement(Statement.setMyInterest(Function.toValues(append.size())));
+                    setMyInterest.setInt(1,owner_id);
+                    for (int i=0;i<append.size();i++){
+                        setMyInterest.setInt(i+2,append.get(i));
+                    }
+                    setMyInterest.execute();
                 }
-                setTags.setInt(interests_id.size()+2,owner_id);
-                System.out.println(setTags);
-                setTags.execute();
+                if (delete!=null){
+                    delete=delete.stream().distinct().collect(Collectors.toList());
+                    PreparedStatement delMyInterest=connection.prepareStatement((Statement.delMyInterest+Function.toValues(delete.size())));
+                    delMyInterest.setInt(1,owner_id);
+                    for (int i=0;i<delete.size();i++){
+                        delMyInterest.setInt(i+2, delete.get(i));
+                    }
+                    delMyInterest.execute();
+                }
                 response=ResponseEntity.ok(new Response(ResponseState.SUCCESS));
-            }
-            if (delete!=null){
-                PreparedStatement delTags=connection.prepareStatement((Statement.delMyIterest+Function.toValues(delete.size())));
-                delTags.setInt(1,owner_id);
-                for (int i=0;i<delete.size();i++){
-                    delTags.setInt(i+2, delete.get(i));
-                }
-                System.out.println(delTags);
-                delTags.execute();
-                response=ResponseEntity.ok(new Response(ResponseState.SUCCESS ));
-            }
-            connection.close();
+                connection.close();
 
-        } catch (Exception e){
-            response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
+            } catch (Exception e){
+                System.out.println(e);
+                response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
 
+            }
         }
-        if (response==(null)){
-            response=ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
-        }
+        else response = ResponseEntity.badRequest().body(new Response(ResponseState.EMPTY));
         return response;
     }
     public static ResponseEntity<?> getFileFromUserPage(int user_id,Object last){

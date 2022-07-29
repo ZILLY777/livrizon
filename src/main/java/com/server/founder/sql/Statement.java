@@ -312,6 +312,15 @@ public class Statement {
             "foreign key (file_id) references files(file_id)\n" +
             "on delete restrict\n" +
             ")";
+    public static String createTableHiddenRecommendation="create table if not exists hidden_recommendation(\n" +
+            "user_id_1 int,\n" +
+            "user_id_2 int,\n" +
+            "unique(user_id_1,user_id_2),\n" +
+            "foreign key (user_id_1) references users(user_id)\n" +
+            "on delete restrict,\n" +
+            "foreign key (user_id_2) references users(user_id)\n" +
+            "on delete restrict\n" +
+            ")";
     public static String insertInterests="insert into interests(name) value('Startup'),('News'),('Investments'),('Business'),('Companies'),('Work'),('Finance'),('Networking'),('Small business'),('Service sector'),('Management'),('Trading'),('Politics'),('It'),('Real estate'),('Logistics'),('Advertising'),('Energetics'),('Design'),('Agriculture'),('Construction'),('Education'),('Psychology'),('Jurisprudence'),('Technique'),('Architecture'),('Travels'),('Art'),('Innovation'),('Science'),('Medicine'),('Music'),('Nature'),('Photo'),('Movie'),('Animals'),('Transport'),('Sports'),('Media'),('Fashion'),('Food')\n";
     public static String selectMultiplePollLines="SELECT poll_lines.line_id FROM polls\n" +
             "inner join poll_lines on (polls.poll_id=poll_lines.poll_id)\n" +
@@ -440,11 +449,13 @@ public class Statement {
                 orderByDesc(Function.concat(TableName.subfour,Column.subscribe_id))+
                 limit(25);
     }
-    public static String setMyInterest="insert into founder.user_interests (user_id,interest_id) (select ?,interests.interest_id from founder.interests\n" +
-            "where interests.interest_id in ";
-    public static String getChangeMyInterest2=
+    public static String setMyInterest(String params){
+        return "replace into founder.user_interests (user_id,interest_id) (select ? as user_id,interests.interest_id from interests\n" +
+                "where interests.interest_id in"+params+")";
+    };
+    public static String getChangeMyInterest=
             " and not (select count(user_interests.interest_id) from user_interests where user_interests.user_id=? and user_interests.interest_id=interests.interest_id))";
-    public static String delMyIterest="DELETE FROM founder.user_interests \n" +
+    public static String delMyInterest="DELETE FROM founder.user_interests \n" +
             "WHERE user_id=? and interest_id IN ";
     public static String getRelationWithUser(Object next){
         return "select user_one.user_id,user_one.first_name,user_one.last_name,user_one.confirm,user_one_avatar.url,\n" +

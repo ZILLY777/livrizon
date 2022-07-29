@@ -68,16 +68,16 @@ public class OwnerController {
     }
 
     @PostMapping("/my_interests")
-    ResponseEntity<?> postHobbiesId(@RequestHeader String auth, @RequestParam List<Integer> interests_id){
+    ResponseEntity<?> postHobbiesId(@RequestHeader String auth, @RequestParam List<Integer> append){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-        if(tokenState == ResponseState.ACCESS) return UserRequest.setMyInterests(auth,interests_id);
+        if(tokenState == ResponseState.ACCESS) return UserRequest.setMyInterests(auth,append);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
 
     @PutMapping("/my_interests")
-    ResponseEntity<?> putHobbiesId(@RequestHeader String auth, @RequestParam (required = false) List<Integer> interests_id, @RequestParam(required = false) List<Integer> delete){
+    ResponseEntity<?> putHobbiesId(@RequestHeader String auth, @RequestParam (required = false) List<Integer> append, @RequestParam(required = false) List<Integer> delete){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-        if(tokenState == ResponseState.ACCESS) return UserRequest.changeMyInterests(auth,interests_id,delete);
+        if(tokenState == ResponseState.ACCESS) return UserRequest.changeMyInterests(auth,append,delete);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
     @GetMapping("/relation/{user_id}")
