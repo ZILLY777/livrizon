@@ -19,9 +19,9 @@ public class AuthorizationController {
         return LoginRequest.confirmCode(login);
     }
     @PostMapping("/authorization")
-    ResponseEntity<?> authorization(@RequestHeader String auth, @RequestParam String user, @RequestParam(required = false) MultipartFile file){
+    ResponseEntity<?> authorization(@RequestHeader String auth, @RequestParam String registration, @RequestParam(required = false) MultipartFile avatar,@RequestParam(required = false) MultipartFile preview){
         ResponseState tokenState = JwtUtil.validateToken(auth,TokenType.REGISTER_TOKEN,null);
-        if(tokenState == ResponseState.ACCESS) return LoginRequest.authorization(auth,new Gson().fromJson(user,User.class),file);
+        if(tokenState == ResponseState.ACCESS) return LoginRequest.authorization(auth,new Gson().fromJson(registration, Registration.class),avatar,preview);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
     @GetMapping("/authentication")

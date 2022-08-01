@@ -18,10 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static com.server.founder.function.Function.connect;
 
 public class UserRequest {
     public static ResponseEntity<?> getRelationWithUser(String auth,int user_id,String next){
@@ -120,7 +117,7 @@ public class UserRequest {
                 Connection connection=Function.connect();
                 int user_id=JwtUtil.extractId(auth);
                 FileRequest.loadAvatar(user_id, FileRequest.loadFile(file,true,user_id,connection),connection);
-                FileRequest.loadPreviewAvatar(user_id, FileRequest.loadFile(preview,true,user_id,connection),connection);
+                FileRequest.loadPreviewAvatar(user_id, FileRequest.loadFile(preview,false,user_id,connection),connection);
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.SUCCESS));
                 connection.close();
             } catch (SQLException e){
@@ -158,13 +155,12 @@ public class UserRequest {
         return response;
     }
     public static ResponseEntity<?> setMyInterests(String auth,List<Integer> append){
-        int owner_id=JwtUtil.extractId(auth);
         ResponseEntity<?> response;
         try {
             Connection connection=Function.connect();
             append=append.stream().distinct().collect(Collectors.toList());
             PreparedStatement setMyInterest=connection.prepareStatement(Statement.setMyInterest(Function.toValues(append.size())));
-            setMyInterest.setInt(1,owner_id);
+            setMyInterest.setInt(1,JwtUtil.extractId(auth));
             for (int i=0;i<append.size();i++){
                 setMyInterest.setInt(i+2,append.get(i));
             }
@@ -206,7 +202,6 @@ public class UserRequest {
                 connection.close();
 
             } catch (Exception e){
-                System.out.println(e);
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
 
             }
@@ -277,30 +272,21 @@ public class UserRequest {
         }
         return response;
     }
-    public static User findUserBy(String tableName,String column,Object object,Connection connect) throws SQLException {
-        Connection connection;
-        if(connect!=null) connection=connect;
-        else connection=Function.connect();
-        PreparedStatement findUserBy=connection.prepareStatement(Statement.findItemBy(tableName, Column.all,column));
-        findUserBy.setObject(1,object);
+    public static Registration findTokenInformation(String username,String password,Connection connection) throws SQLException {
+        PreparedStatement findUserBy=connection.prepareStatement(Statement.findTokenInformation);
+        findUserBy.setObject(1,username);
+        findUserBy.setObject(2,password);
         ResultSet resultSet=findUserBy.executeQuery();
-        User user;
-        if(resultSet.next()) user=new User(resultSet);
-        else user=null;
-        if(connect==null) connection.close();
-        return user;
+        Registration registration =new Registration();
+        return registration;
     }
-    public static Login findLoginByUserName(String username, Connection connect) throws SQLException {
-        Connection connection;
-        if(connect!=null) connection=connect;
-        else connection = connect();
+    public static Login findLogin(String username, Connection connection) throws SQLException {
         PreparedStatement findLoginByUsername=connection.prepareStatement(Statement.findItemBy(TableName.login, Column.all, Column.username));
         findLoginByUsername.setString(1, username);
         ResultSet resultSet=findLoginByUsername.executeQuery();
         Login login;
         if(resultSet.next()) login =new Login(resultSet);
         else login =null;
-        if(connect==null) connection.close();
         return login;
     }
 }

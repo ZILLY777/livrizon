@@ -168,7 +168,7 @@ public class PostRequest {
                     return ResponseEntity.badRequest().body(new Response(ResponseState.FILE_ERROR));
                 }
             }
-            return ResponseEntity.badRequest().body(new Response(ResponseState.TO_MUCH));
+            else return ResponseEntity.badRequest().body(new Response(ResponseState.TO_MUCH));
         }
         else return ResponseEntity.badRequest().body(new Response(ResponseState.EMPTY));
     }

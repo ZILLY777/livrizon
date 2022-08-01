@@ -200,11 +200,11 @@ public class FileRequest {
             insertAvatar.execute();
         }
     }
-    public static void loadPreviewAvatar(int user_id,Object file_id,Connection connection) throws SQLException, IOException {
-        if(file_id!=null) {
+    public static void loadPreviewAvatar(int user_id,Object preview,Connection connection) throws SQLException, IOException {
+        if(preview!=null) {
             PreparedStatement insertAvatar = connection.prepareStatement(Statement.insertPreviewAvatar);
             insertAvatar.setInt(1, user_id);
-            insertAvatar.setObject(2, file_id);
+            insertAvatar.setObject(2, preview);
             insertAvatar.execute();
         }
     }

@@ -5,8 +5,15 @@ public class Column {
     public static String sub= "sub";
     public static String my_sub= "my_sub";
     public static String it_sub= "it_sub";
+    public static String city_id= "city_id";
+    public static String citizenship_id= "citizenship_id";
     public static String gen= "gen";
+    public static String code= "code";
+    public static String hobbies= "hobbies";
+    public static String qualities= "qualities";
+    public static String skills= "skills";
     public static String mutual= "mutual";
+    public static String gender= "gender";
     public static String vote_id= "vote_id";
     public static String message_id= "message_id";
     public static String post_file_id= "post_file_id";

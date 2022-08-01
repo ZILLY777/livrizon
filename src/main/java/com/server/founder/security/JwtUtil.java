@@ -28,6 +28,9 @@ public class JwtUtil {
     public static int extractId(String token) {
         return (int)(double) extractAllClaims(token).get("id");
     }
+    public static int extractRegistration(String token) {
+        return (int)(double) extractAllClaims(token).get("registration");
+    }
     public static Role extractRole(String token) {
         return Role.valueOf(extractAllClaims(token).get("role").toString());
     }
@@ -39,10 +42,10 @@ public class JwtUtil {
         Object exp=extractAllClaims(token).get("exp");
         return exp == null || !((long)(double) exp < System.currentTimeMillis());
     }
-    public static String generateToken(User user) throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
+    public static String generateAccessToken(int user_id,Role role) throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
         Map<String, Object> claim = new HashMap<>();
-        claim.put("id",user.getUser_id());
-        claim.put("role",user.getRole());
+        claim.put("id", user_id);
+        claim.put("role", role);
         claim.put("type","ACCESS_TOKEN");
         return createToken(claim,3 * 60 * 60 * 1000);
     }

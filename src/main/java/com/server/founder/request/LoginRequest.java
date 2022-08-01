@@ -1,7 +1,6 @@
 package com.server.founder.request;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.server.founder.constant.Constant;
 import com.server.founder.function.Encrypt;
 import com.server.founder.function.Function;
 import com.server.founder.model.*;
@@ -18,40 +17,60 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Objects;
 
 import static com.server.founder.function.Function.connect;
-import static com.server.founder.request.UserRequest.findLoginByUserName;
 @Service
 public class LoginRequest {
-    public static ResponseEntity<?> authorization (String auth,User user, MultipartFile file) {
+    public static ResponseEntity<?> authorization (String auth, Registration registration, MultipartFile avatar, MultipartFile preview) {
         ResponseEntity<?> response;
-        if((user.getLast_name().length()<=20 && !user.getLast_name().contains(Constant.space)) && (user.getFirst_name().length()<20 && !user.getFirst_name().contains(Constant.space))){
+        if(!(registration.getRole()==Role.USER || registration.getRole()==Role.COMPANY))
+            response=ResponseEntity.badRequest().body(new Response(ResponseState.REGISTRATION_TYPE_ERROR));
+        else if(!(avatar==null && preview==null || avatar!=null && preview!=null))
+            response=ResponseEntity.badRequest().body(new Response(ResponseState.EMPTY_FILE));
+        else if(avatar!= null && avatar.getSize()>0 && avatar.getSize()<Function.toMB(100) && preview.getSize()>0 && preview.getSize()<Function.toMB(100) && preview.getSize()<avatar.getSize())
+            response=ResponseEntity.badRequest().body(new Response(ResponseState.SIZE_ERROR));
+        else if(registration.getName()==null)
+            response=ResponseEntity.badRequest().body(new Response(ResponseState.EMPTY_NAME));
+        else if(registration.getName().length()>50)
+            response=ResponseEntity.badRequest().body(new Response(ResponseState.LENGTH_ERROR));
+        else {
             try {
-                Connection connection=connect();
+                Connection connection=Function.connect();
                 HashMap token=JwtUtil.extractAllClaims(auth);
                 String username=String.valueOf(token.get(Column.sub));
                 if (!Request.ItemExist(TableName.users, Column.username,username,connection)){
-                    PreparedStatement insertUser=connection.prepareStatement(Statement.insertUser);
+                    PreparedStatement insertUser=connection.prepareStatement(Statement.insertUser(registration.getRole()));
                     insertUser.setString(2,username);
-                    insertUser.setString(3,Encrypt.getHash(user.getPassword()));
-                    insertUser.setString(4,String.valueOf(token.get(Column.registration)));
-                    insertUser.setString(5,user.getFirst_name());
-                    insertUser.setString(6,user.getLast_name());
+                    insertUser.setString(3,Encrypt.getHash(registration.getPassword()));
+                    insertUser.setString(4,String.valueOf(registration.getRole()));
+                    insertUser.setString(5,String.valueOf(token.get(Column.registration)));
+                    insertUser.setString(6,registration.getName());
+                    insertUser.setString(7, registration.getDescription());
+                    insertUser.setInt(8, registration.getCity_id());
+                    if(registration.getRole()==Role.USER){
+                        insertUser.setDate(9,null);
+                        insertUser.setString(10,String.valueOf(registration.getGender()));
+                        insertUser.setString(11, registration.getHobbies());
+                        insertUser.setString(12, registration.getSkills());
+                        insertUser.setString(13, registration.getQualities());
+                    }
                     int user_id=Request.tableIndex(TableName.users, Column.user_id,connection)+1;
                     insertUser.setInt(1,user_id);
                     insertUser.execute();
-                    if(file!=null && file.getSize()<Function.toMB(100)) FileRequest.loadAvatar(user_id,FileRequest.loadFile(file,true,user_id, connection),connection);
-                    user.setUser_id(user_id);
-                    user.setRole(Role.USER);
-                    user.setUsername(username);
-                    response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateToken(user)));
+                    if(avatar!=null) {
+                        FileRequest.loadAvatar(user_id, FileRequest.loadFile(avatar, true, user_id, connection), connection);
+                        FileRequest.loadPreviewAvatar(user_id, FileRequest.loadFile(preview,false,user_id,connection),connection);
+                    }
+                    response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateAccessToken(user_id,registration.getRole())));
                 }
                 else response=ResponseEntity.badRequest().body(new Response(ResponseState.ALREADY_EXIST));
                 connection.close();
             } catch (SQLException e) {
+                System.out.println(e);
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
             } catch (IOException e) {
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.FILE_ERROR));
@@ -59,18 +78,16 @@ public class LoginRequest {
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.TOKEN_EXCEPTION));
             }
         }
-        else if(user.getLast_name().length()>20 || user.getFirst_name().length()>20) response=ResponseEntity.badRequest().body(new Response(ResponseState.LENGTH_ERROR));
-        else response=ResponseEntity.badRequest().body(new Response(ResponseState.TEXT_ERROR));
         return response;
     }
     public static ResponseEntity<?> confirmCode(Login confirm) {
         ResponseEntity<?> responseEntity;
         try {
             Connection connection=connect();
-            Login login = findLoginByUserName(confirm.getUsername(),connection);
+            Login login = UserRequest.findLogin(confirm.getUsername(),connection);
             if(login!=null) {
                 if(login.getCode()==confirm.getCode()){
-                    PreparedStatement dropEvent = connect().prepareStatement(Statement.dropEvent(String.format("login_%s",confirm.getUsername())));
+                    PreparedStatement dropEvent = connection.prepareStatement(Statement.dropEvent(String.format("login_%s",confirm.getUsername())));
                     dropEvent.execute();
                     PreparedStatement deleteFromLogin=connection.prepareStatement(Statement.deleteFromLogin);
                     deleteFromLogin.setString(1,confirm.getUsername());
@@ -96,7 +113,7 @@ public class LoginRequest {
                 replaceLogin.setInt(2, Function.random(1000,9000));
                 replaceLogin.setString(3, String.valueOf(login.getRegistration()));
                 replaceLogin.execute();
-                PreparedStatement dropEvent= connect().prepareStatement(Statement.dropEvent(String.format("login_%s",login.getUsername())));
+                PreparedStatement dropEvent = connection.prepareStatement(Statement.dropEvent(String.format("login_%s",login.getUsername())));
                 dropEvent.execute();
                 PreparedStatement launchLoginEvent=connection.prepareStatement(Statement.launchLoginEvent(login.getUsername()));
                 launchLoginEvent.execute();
@@ -109,17 +126,22 @@ public class LoginRequest {
         }
         return response;
     }
-    public static ResponseEntity<?> authentication(Authentication authenticationRequest) {
+    public static ResponseEntity<?> authentication(Authentication authentication) {
+        ResponseEntity<?> response;
         try {
-            User user = UserRequest.findUserBy(TableName.users, Column.username,authenticationRequest.getUsername(),null);
-            if(user==null) return ResponseEntity.badRequest().body(new Response(ResponseState.NOT_EXIST));
-            else {
-                if(Objects.equals(Encrypt.getHash(authenticationRequest.getPassword()), user.getPassword())) return ResponseEntity.ok().body(new Jwt(JwtUtil.generateToken(user)));
-                else return ResponseEntity.badRequest().body(new Response(ResponseState.INCORRECT_PASSWORD));
-            }
+            Connection connection=Function.connect();
+            PreparedStatement findTokenInformation=connection.prepareStatement(Statement.findTokenInformation);
+            findTokenInformation.setObject(1,authentication.getUsername());
+            findTokenInformation.setObject(2,Encrypt.getHash(authentication.getPassword()));
+            ResultSet resultSet=findTokenInformation.executeQuery();
+            if(resultSet.next())
+                response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateAccessToken(resultSet.getInt(Column.user_id),Role.valueOf(resultSet.getString(Column.role)))));
+            else
+                response = ResponseEntity.badRequest().body(new Response(ResponseState.INCORRECT_LOGIN_PASSWORD));
+            connection.close();
         } catch (SQLException | NoSuchAlgorithmException | InvalidKeyException | JsonProcessingException e) {
-            return ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
+            response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
-
+        return response;
     }
 }

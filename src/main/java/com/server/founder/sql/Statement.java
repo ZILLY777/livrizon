@@ -3,8 +3,37 @@ package com.server.founder.sql;
 import com.server.founder.constant.Constant;
 import com.server.founder.function.Encrypt;
 import com.server.founder.function.Function;
+import com.server.founder.model.Role;
 
 public class Statement {
+    public static String createTableUserCities="create table if not exists user_cities(\n" +
+            "user_id int,\n" +
+            "city_id int,\n" +
+            "foreign key (user_id) references users(user_id)\n" +
+            "on delete restrict,\n" +
+            "foreign key (city_id) references city(city_id)\n" +
+            "on delete restrict\n" +
+            ")";
+    public static String createTableUserCitizens="create table if not exists user_citizenship(\n" +
+            "user_id int,\n" +
+            "citizenship_id int,\n" +
+            "foreign key (user_id) references users(user_id)\n" +
+            "on delete restrict,\n" +
+            "foreign key (citizenship_id) references citizenship(citizenship_id)\n" +
+            "on delete restrict\n" +
+            ")";
+    public static String createTableCity="create table if not exists cities(\n" +
+            "city_id int auto_increment primary key not null,\n" +
+            "name varchar(20)\n" +
+            ")";
+    public static String createTableCitizenship="create table if not exists citizenship(\n" +
+            "citizenship_id int auto_increment primary key not null,\n" +
+            "name varchar(20)\n" +
+            ")";
+    public static String createTableProfessions="create table if not exists professions(\n" +
+            "profession_id int auto_increment primary key not null,\n" +
+            "name text\n" +
+            ")";
     public static String createTableUserConnection="create table if not exists user_connection(\n" +
             "\tconnection_id int auto_increment primary key not null,\n" +
             "\tuser_id_1 int not null,\n" +
@@ -236,21 +265,26 @@ public class Statement {
             "code smallint," +
             "registration enum('PHONE','MAIL','LOGIN')"+
             ")";
-    public static String createTableUsers="create table if not exists users(" +
-            "user_id int primary key not null," +
-            "username varchar(45) unique  not null," +
-            "index(username)," +
-            "password varchar(40)," +
-            "status boolean default true," +
-            "created datetime default now()," +
-            "role enum('USER','ADMIN','COMPANY','GROUP','CHANNEL','INFORMATION','SUPPORT') default 'USER'," +
-            "registration enum('PHONE','MAIL','LOGIN')," +
-            "first_name varchar(20)," +
-            "last_name varchar(20)," +
-            "confirm boolean default false,"+
-            "birthday datetime,"+
-            "city text,"+
-            "description text"+
+    public static String createTableUsers="create table if not exists users(\n" +
+            "user_id int primary key not null,\n" +
+            "username varchar(45) unique  not null,\n" +
+            "index(username),\n" +
+            "password varchar(40),\n" +
+            "status boolean default true,\n" +
+            "created date DEFAULT (CURRENT_DATE) not null,\n" +
+            "role enum('USER','ADMIN','COMPANY') not null,\n" +
+            "registration enum('PHONE','MAIL'),\n" +
+            "name varchar(50) not null,\n" +
+            "confirm boolean default false,\n" +
+            "birthday date,\n" +
+            "gender enum('MAN', 'WOMAN', 'NOT_SPECIFIED'),\n" +
+            "description text,\n" +
+            "hobbies text,\n" +
+            "skills text,\n" +
+            "qualities text,\n" +
+            "city_id int,\n" +
+            "foreign key (city_id) references cities(city_id)\n" +
+            "on delete restrict\n" +
             ")";
     public static String createTableLineUsers="create table if not exists line_users(\n" +
             "\tvote_id int primary key auto_increment not null,\n" +
@@ -284,6 +318,12 @@ public class Statement {
             "byte LONGBLOB," +
             "foreign key (user_id) references users(user_id)" +
             "on delete restrict" +
+            ")";
+    public static String createTableUserProfessions="create table if not exists user_professions(\n" +
+            "user_id int,\n" +
+            "profession text,\n" +
+            "foreign key (user_id) references users(user_id)\n" +
+            "on delete restrict\n" +
             ")";
     public static String createTablePublicAvatars="create table if not exists public_avatars(\n" +
             "avatar_id int primary key auto_increment not null,\n" +
@@ -452,9 +492,7 @@ public class Statement {
     public static String setMyInterest(String params){
         return "replace into founder.user_interests (user_id,interest_id) (select ? as user_id,interests.interest_id from interests\n" +
                 "where interests.interest_id in"+params+")";
-    };
-    public static String getChangeMyInterest=
-            " and not (select count(user_interests.interest_id) from user_interests where user_interests.user_id=? and user_interests.interest_id=interests.interest_id))";
+    }
     public static String delMyInterest="DELETE FROM founder.user_interests \n" +
             "WHERE user_id=? and interest_id IN ";
     public static String getRelationWithUser(Object next){
@@ -853,10 +891,16 @@ public class Statement {
             "where user_posts.page=? and user_posts.user_id=user_posts.page and user_posts.repost is null and \n" +
             "(contentType like 'image%' or contentType like 'video%')\n" +
             "order by post_files.post_file_id desc\n";
-    public static String insertUser="insert into users (user_id,username,password,registration,first_name,last_name) value(?,?,?,?,?,?)";
+    public static String insertUser(Role role){
+        if(role==Role.USER) return "insert into users (user_id,username,password,role,registration,name," +
+                "description,city_id,birthday,gender,hobbies,skills,qualities) value(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        else return "insert into users (user_id,username,password,role,registration,name," +
+                "description,city_id) value(?,?,?,?,?,?,?,?)";
+    }
     public static String insertIntoPostsFiles="insert into post_files (post_id,file_id) values ";
     public static String insertIntoLineUsers="insert into line_users (line_id,user_id) values ";
     public static String findUsersByName(Object user_id,String[] listOfName,Object next){
+        String a="left join user_connection on(user_connection.user_id_1=if(users.user_id<3,users.user_id,3) and user_connection.user_id_2=if(users.user_id>3,3,users.user_id))\n";
         return "SELECT users.user_id,users.first_name,users.last_name,user_avatar.url,users.confirm\n" +
                 "FROM users\n" +
                 "left join user_connection on((user_connection.user_id_1=users.user_id || user_connection.user_id_2=users.user_id) and\n" +
@@ -914,6 +958,7 @@ public class Statement {
     public static String findItemBy (String tableName,String column,String by){
         return select(column)+tableName+" "+findBy(by);
     }
+    public static String findTokenInformation="SELECT user_id,role FROM users where users.username=? && password=?";
     public static String subscribe="replace into "+TableName.subscribes+" (user_id,sub_id) values(?,?)";
     public static String deleteLikeOnPostPreviewFile="delete from file_likes where file_likes.file_id=(SELECT file_id from post_files \n" +
             "where post_id=(select post_id from user_posts where user_post_id=?) and post_files.status=true\n" +
