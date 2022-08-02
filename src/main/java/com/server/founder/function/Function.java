@@ -7,8 +7,6 @@ import com.server.founder.security.JwtUtil;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,18 +61,6 @@ public class Function {
         }
         str.append(")");
         return str.toString();
-    }
-    public static int checkDuplicate(boolean statement){
-        if(statement) return 1;
-        return 2;
-    }
-    public static boolean validateDate(String date){
-        try {
-            LocalDate.parse(date);
-        } catch (DateTimeParseException e){
-            return false;
-        }
-        return true;
     }
     public static long toMB(long space){
         return space*1024*1024;

@@ -31,17 +31,15 @@ public class LoginRequest {
             response=ResponseEntity.badRequest().body(new Response(ResponseState.REGISTRATION_TYPE_ERROR));
         else if(!(avatar==null && preview==null || avatar!=null && preview!=null))
             response=ResponseEntity.badRequest().body(new Response(ResponseState.EMPTY_FILE));
-        else if(avatar!=null && !(avatar.getSize() > 0 && avatar.getSize() < Function.toMB(100) && preview.getSize() > 0 && preview.getSize() < Function.toMB(100)))
+        else if(avatar!= null && avatar.getSize()>0 && avatar.getSize()<Function.toMB(100) && preview.getSize()>0 && preview.getSize()<Function.toMB(100) && preview.getSize()<avatar.getSize())
             response=ResponseEntity.badRequest().body(new Response(ResponseState.SIZE_ERROR));
         else if(registration.getName()==null)
             response=ResponseEntity.badRequest().body(new Response(ResponseState.EMPTY_NAME));
-        else if(!Function.validateDate(registration.getBirthday()))
-            response=ResponseEntity.badRequest().body(new Response(ResponseState.INCORRECT_DATE));
         else if(registration.getName().length()>50)
             response=ResponseEntity.badRequest().body(new Response(ResponseState.LENGTH_ERROR));
         else {
             try {
-                Connection connection= connect();
+                Connection connection=Function.connect();
                 HashMap token=JwtUtil.extractAllClaims(auth);
                 String username=String.valueOf(token.get(Column.sub));
                 if (!Request.ItemExist(TableName.users, Column.username,username,connection)){
@@ -51,14 +49,14 @@ public class LoginRequest {
                     insertUser.setString(4,String.valueOf(registration.getRole()));
                     insertUser.setString(5,String.valueOf(token.get(Column.registration)));
                     insertUser.setString(6,registration.getName());
-                    insertUser.setString(7,registration.getDescription());
-                    insertUser.setInt(8,registration.getCity_id());
+                    insertUser.setString(7, registration.getDescription());
+                    insertUser.setInt(8, registration.getCity_id());
                     if(registration.getRole()==Role.USER){
                         insertUser.setDate(9,null);
                         insertUser.setString(10,String.valueOf(registration.getGender()));
-                        insertUser.setString(11,registration.getHobbies());
-                        insertUser.setString(12,registration.getSkills());
-                        insertUser.setString(13,registration.getQualities());
+                        insertUser.setString(11, registration.getHobbies());
+                        insertUser.setString(12, registration.getSkills());
+                        insertUser.setString(13, registration.getQualities());
                     }
                     int user_id=Request.tableIndex(TableName.users, Column.user_id,connection)+1;
                     insertUser.setInt(1,user_id);
@@ -67,7 +65,6 @@ public class LoginRequest {
                         FileRequest.loadAvatar(user_id, FileRequest.loadFile(avatar, true, user_id, connection), connection);
                         FileRequest.loadPreviewAvatar(user_id, FileRequest.loadFile(preview,false,user_id,connection),connection);
                     }
-                    ChatRequest.createChat(user_id,user_id,connection);
                     response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateAccessToken(user_id,registration.getRole())));
                 }
                 else response=ResponseEntity.badRequest().body(new Response(ResponseState.ALREADY_EXIST));

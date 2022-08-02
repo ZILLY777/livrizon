@@ -5,7 +5,6 @@ public class TableName {
     public static String user_avatar="user_avatar";
     public static String user_avatars="user_avatars";
     public static String users= "users";
-    public static String name_1= "name_1";
     public static String message_owner= "message_owner";
     public static String chats= "chats";
     public static String repost= "repost";
@@ -13,7 +12,6 @@ public class TableName {
     public static String post_likes= "post_likes";
     public static String user_comment= "user_comment";
     public static String file_likes= "file_likes";
-    public static String params= "params";
     public static String post_comments= "post_comments";
     public static String file_comments= "file_comments";
     public static String files= "files";

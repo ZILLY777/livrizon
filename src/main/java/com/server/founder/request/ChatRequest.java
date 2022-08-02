@@ -31,6 +31,7 @@ public class ChatRequest {
             connection.close();
             return ResponseEntity.ok().body(list);
         } catch (SQLException e){
+            System.out.println(e);
             return ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
     }
@@ -58,16 +59,17 @@ public class ChatRequest {
         ResponseEntity<?> response;
         try {
             Connection connection= Function.connect();
-            int owner_id = JwtUtil.extractId(auth);
-            ResultSet resultSet=checkPrivetChat(owner_id,user_id,connection);
+            int from = JwtUtil.extractId(auth);
+            int user_id_1=Math.min(from,user_id);
+            int user_id_2=Math.max(from,user_id);
+            ResultSet resultSet=checkPrivetChat(user_id_1,user_id_2,user_id,connection);
             if(resultSet.next()){
                 if(!resultSet.getBoolean(Column.status)) response = ResponseEntity.badRequest().body(new Response(ResponseState.NO_ACTIVE));
                 else {
-                    if(resultSet.getObject(Column.user_connection)==null) Request.saveUserConnects(owner_id, user_id, connection);
-                    saveMessage(switch (resultSet.getObject(Column.chat_id)){
-                        case null->createChat(Math.min(owner_id,user_id),Math.max(owner_id,user_id),connection);
-                        default ->resultSet.getInt(Column.chat_id);
-                    }, owner_id, text, connection);
+                    int chat_id;
+                    if (resultSet.getObject(Column.chat_id) == null) chat_id=createChat(user_id_1,user_id_2,connection);
+                    else chat_id=resultSet.getInt(Column.chat_id);
+                    saveMessage(chat_id, from, text, connection);
                     response = ResponseEntity.ok().body(new Response(ResponseState.SUCCESS));
                 }
             }
@@ -85,16 +87,14 @@ public class ChatRequest {
         insertIntoMessages.setString(3,text);
         insertIntoMessages.execute();
     }
-    private static ResultSet checkPrivetChat(int owner_id,int user_id,Connection connection) throws SQLException {
+    private static ResultSet checkPrivetChat(int user_id_1,int user_id_2,int user_id,Connection connection) throws SQLException {
         PreparedStatement checkPrivetChat=connection.prepareStatement(Statement.checkPrivetChat);
-        checkPrivetChat.setInt(1,owner_id);
-        checkPrivetChat.setInt(2,user_id);
-        checkPrivetChat.setInt(3,Math.min(owner_id,user_id));
-        checkPrivetChat.setInt(4,Math.max(owner_id,user_id));
-        System.out.println(checkPrivetChat);
+        checkPrivetChat.setInt(1,user_id_1);
+        checkPrivetChat.setInt(2,user_id_2);
+        checkPrivetChat.setInt(3,user_id);
         return checkPrivetChat.executeQuery();
     }
-    public static int createChat(int user_id_1,int user_id_2,Connection connection) throws SQLException {
+    private static int createChat(int user_id_1,int user_id_2,Connection connection) throws SQLException {
         PreparedStatement insertIntoChats=connection.prepareStatement(Statement.insertIntoChats);
         insertIntoChats.setString(2, String.valueOf(ChatType.PRIVET));
         int chat_id=Request.tableIndex(TableName.chats,Column.chat_id,connection)+1;
@@ -105,13 +105,11 @@ public class ChatRequest {
         insertIntoPrivetChats.setInt(2,user_id_1);
         insertIntoPrivetChats.setInt(3,user_id_2);
         insertIntoPrivetChats.execute();
-        PreparedStatement insertIntoUserChats=connection.prepareStatement(Statement.insertIntoUserChats+Function.toValue(Function.checkDuplicate(user_id_1==user_id_2)));
+        PreparedStatement insertIntoUserChats=connection.prepareStatement(Statement.insertIntoUserChats+Function.toValue(2));
         insertIntoUserChats.setInt(1,chat_id);
         insertIntoUserChats.setInt(2,user_id_1);
-        if(user_id_1!=user_id_2){
-            insertIntoUserChats.setInt(3,chat_id);
-            insertIntoUserChats.setInt(4,user_id_2);
-        }
+        insertIntoUserChats.setInt(3,chat_id);
+        insertIntoUserChats.setInt(4,user_id_2);
         insertIntoUserChats.execute();
         return chat_id;
     }

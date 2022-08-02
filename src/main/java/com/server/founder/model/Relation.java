@@ -22,6 +22,7 @@ public class Relation {
     public Relation(ResultSet resultSet) throws SQLException {
         this.my_sub = resultSet.getBoolean(Column.my_sub);
         this.it_sub = resultSet.getBoolean(Column.it_sub);
-        this.gen = resultSet.getObject(Column.gen);
+        if(resultSet.getObject(Column.gen)!=null)
+            this.gen = resultSet.getObject(Column.gen);
     }
 }
