@@ -99,7 +99,7 @@ public class SubscribeRequest {
                 Connection connection = Function.connect();
                 ResponseState status = checkSubscribe(owner_id, user_id, connection);
                 if (status == ResponseState.EXIST) {
-                    Request.saveUserConnect(JwtUtil.extractId(auth), user_id, connection);
+                    Request.saveUserConnects(owner_id, user_id, connection);
                     subscribe(owner_id, user_id, connection);
                     response = ResponseEntity.ok().body(new Response(ResponseState.SUCCESS));
                 }
@@ -118,11 +118,11 @@ public class SubscribeRequest {
         int owner_id=JwtUtil.extractId(auth);
         if (owner_id!=user_id){
             try {
-                Connection connection = Function.connect();///передаем переменной коннект права подключения вызвав класс Function и connect С перелданными методами
-                PreparedStatement getSubOfSub=connection.prepareStatement(Statement.getMutualConnection(last));///понятно что даем sub права на устонавку вопросиков
+                Connection connection = Function.connect();
+                PreparedStatement getSubOfSub=connection.prepareStatement(Statement.getMutualConnection(last));
                 getSubOfSub.setInt(1,user_id);
                 getSubOfSub.setInt(2,owner_id);
-                if(last!=null) getSubOfSub.setObject(3,last);///откуда там 3ий парметр в Statement.java
+                if(last!=null) getSubOfSub.setObject(3,last);
                 ResultSet resultSet=getSubOfSub.executeQuery();
                 List<MySubscribe> list=new ArrayList<>();
                 while (resultSet.next()){

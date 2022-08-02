@@ -6,6 +6,7 @@ public class Column {
     public static String my_sub= "my_sub";
     public static String it_sub= "it_sub";
     public static String city_id= "city_id";
+    public static String user_connection= "user_connection";
     public static String citizenship_id= "citizenship_id";
     public static String gen= "gen";
     public static String code= "code";
@@ -24,7 +25,6 @@ public class Column {
     public static String description= "description";
     public static String city= "city";
     public static String birthday= "birthday";
-    public static String files_number= "files_number";
     public static String post_number= "post_number";
     public static String subscribe_id= "subscribe_id";
     public static String like_id= "like_id";
@@ -58,8 +58,6 @@ public class Column {
     public static String user_id="user_id";
     public static String chat_id="chat_id";
     public static String avatar_id="avatar_id";
-    public static String first_name="first_name";
-    public static String last_name="last_name";
     public static String post_id="post_id";
     public static String user_post_id="user_post_id";
     public static String file_id="file_id";

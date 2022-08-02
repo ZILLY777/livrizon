@@ -10,13 +10,11 @@ import java.sql.SQLException;
 @Data
 public class Owner {
     int user_id;
-    String first_name;
-    String last_name;
+    String name;
     public Owner() {
     }
     public Owner(ResultSet resultSet,String tableName) throws SQLException {
         this.user_id = resultSet.getInt(Function.concat(tableName,Column.user_id));
-        this.first_name = resultSet.getString(Function.concat(tableName,Column.first_name));
-        this.last_name = resultSet.getString(Function.concat(tableName,Column.last_name));
+        this.name = resultSet.getString(Function.concat(tableName,Column.name));
     }
 }

@@ -3,7 +3,7 @@ package com.server.founder.model;
 
 import lombok.Data;
 
-import java.util.Date;
+import java.util.List;
 
 
 @Data
@@ -13,7 +13,7 @@ public class Registration {
     String name;
     String description;
     int city_id;
-    Date birthday;
+    String birthday;
     Gender gender;
     String hobbies;
     String skills;

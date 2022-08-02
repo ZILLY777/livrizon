@@ -41,7 +41,6 @@ public class RecommendationRequest {
             PreparedStatement getPossibleUsers=connection.prepareStatement(Statement.getPossibleUsers(next));
             getPossibleUsers.setInt(1,JwtUtil.extractId(auth));
             if(next!=null) getPossibleUsers.setInt(2,Integer.parseInt(next));
-            System.out.println(getPossibleUsers);
             ResultSet resultSet=getPossibleUsers.executeQuery();
             List<Recommendation> list=new ArrayList<>();
             while (resultSet.next()){
@@ -50,7 +49,6 @@ public class RecommendationRequest {
             connection.close();
             return ResponseEntity.ok().body(list);
         } catch (SQLException e){
-            System.out.println(e);
             return ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
     }

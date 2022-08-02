@@ -110,11 +110,11 @@ public class FileRequest {
             return ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
     }
-    public static ResponseEntity<?> deleteLikeOnFile(String auth,String url){
+    public static ResponseEntity<?> deleteLikeOnFile(String auth,int url){
         try {
             Connection connection=Function.connect();
             PreparedStatement deleteLikeOnFile=connection.prepareStatement(Statement.deleteLikeOnFile);
-            deleteLikeOnFile.setString(1,url);
+            deleteLikeOnFile.setInt(1,url);
             deleteLikeOnFile.setInt(2,JwtUtil.extractId(auth));
             deleteLikeOnFile.execute();
             connection.close();
@@ -175,12 +175,12 @@ public class FileRequest {
         }
         return response;
     }
-    public static ResponseEntity<?> loadFileApart(MultipartFile file,String url){
+    public static ResponseEntity<?> loadFileApart(String auth,MultipartFile file,String url){
         ResponseEntity<?> response;
         try {
             Connection connection=Function.connect();
             if(!Request.ItemExist(TableName.files,Column.url,url,connection)) {
-                loadFile(file, url, false, null, connection);
+                loadFile(file, url, false, JwtUtil.extractId(auth), connection);
                 response = ResponseEntity.ok().body(new Response(ResponseState.SUCCESS));
             }
             else response = ResponseEntity.badRequest().body(new Response(ResponseState.NOT_EXIST));
@@ -193,20 +193,16 @@ public class FileRequest {
         return response;
     }
     public static void loadAvatar(int user_id,Object file_id,Connection connection) throws SQLException, IOException {
-        if(file_id!=null) {
-            PreparedStatement insertAvatar = connection.prepareStatement(Statement.insertAvatar);
-            insertAvatar.setInt(1, user_id);
-            insertAvatar.setObject(2, file_id);
-            insertAvatar.execute();
-        }
+        PreparedStatement insertAvatar = connection.prepareStatement(Statement.insertAvatar);
+        insertAvatar.setInt(1, user_id);
+        insertAvatar.setObject(2, file_id);
+        insertAvatar.execute();
     }
     public static void loadPreviewAvatar(int user_id,Object preview,Connection connection) throws SQLException, IOException {
-        if(preview!=null) {
-            PreparedStatement insertAvatar = connection.prepareStatement(Statement.insertPreviewAvatar);
-            insertAvatar.setInt(1, user_id);
-            insertAvatar.setObject(2, preview);
-            insertAvatar.execute();
-        }
+        PreparedStatement insertAvatar = connection.prepareStatement(Statement.insertPreviewAvatar);
+        insertAvatar.setInt(1, user_id);
+        insertAvatar.setObject(2, preview);
+        insertAvatar.execute();
     }
     public static Object loadFile(MultipartFile file,boolean status,int user_id,Connection connection) throws SQLException, IOException {
         return loadFile(file,String.valueOf(UUID.randomUUID()),status,user_id,connection);
