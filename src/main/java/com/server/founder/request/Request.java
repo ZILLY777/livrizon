@@ -175,14 +175,6 @@ public class Request {
         PreparedStatement createTableCitizenship=connection.prepareStatement(Statement.createTableCitizenship);
         PreparedStatement createTableCity=connection.prepareStatement(Statement.createTableCity);
         PreparedStatement createTableUserCitizens=connection.prepareStatement(Statement.createTableUserCitizens);
-        PreparedStatement createTableVacancies=connection.prepareStatement(Statement.createTableVacancies);
-        PreparedStatement createTableCategoryOfVacancies=connection.prepareStatement(Statement.createTableCategoryOfVacancies);
-        PreparedStatement createTableExperience=connection.prepareStatement(Statement.createTableExperience);
-        PreparedStatement createTableProfession=connection.prepareStatement(Statement.createTableProfession);
-        PreparedStatement createTableEducation=connection.prepareStatement(Statement.createTableEducation);
-        PreparedStatement createTableCurrency=connection.prepareStatement(Statement.createTableCurrency);
-        PreparedStatement createTableTimetable=connection.prepareStatement(Statement.createTableTimetable);
-        PreparedStatement createTableSkills=connection.prepareStatement(Statement.createTableSkills);
         createTableUsers.execute();
         createTableFiles.execute();
         createTableLogin.execute();
@@ -216,14 +208,6 @@ public class Request {
         createTableCitizenship.execute();
         createTableCity.execute();
         createTableUserCitizens.execute();
-        createTableVacancies.execute();
-        createTableCategoryOfVacancies.execute();
-        createTableExperience.execute();
-        createTableProfession.execute();
-        createTableEducation.execute();
-        createTableCurrency.execute();
-        createTableTimetable.execute();
-        createTableSkills.execute();
         connection.close();
     }
     public static void deleteAllVotes(int poll_id ,int user_id,Connection connection) throws SQLException {

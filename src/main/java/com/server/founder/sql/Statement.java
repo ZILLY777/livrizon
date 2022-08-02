@@ -6,7 +6,7 @@ import com.server.founder.function.Function;
 import com.server.founder.model.Role;
 
 public class Statement {
-    public static String createTableUserCities="create table if not exists founder.user_cities(\n" +
+    public static String createTableUserCities="create table if not exists user_cities(\n" +
             "user_id int,\n" +
             "city_id int,\n" +
             "foreign key (user_id) references users(user_id)\n" +
@@ -362,81 +362,6 @@ public class Statement {
             "on delete restrict\n" +
             ")";
     public static String insertInterests="insert into interests(name) value('Startup'),('News'),('Investments'),('Business'),('Companies'),('Work'),('Finance'),('Networking'),('Small business'),('Service sector'),('Management'),('Trading'),('Politics'),('It'),('Real estate'),('Logistics'),('Advertising'),('Energetics'),('Design'),('Agriculture'),('Construction'),('Education'),('Psychology'),('Jurisprudence'),('Technique'),('Architecture'),('Travels'),('Art'),('Innovation'),('Science'),('Medicine'),('Music'),('Nature'),('Photo'),('Movie'),('Animals'),('Transport'),('Sports'),('Media'),('Fashion'),('Food')\n";
-
-
-    public static  String createTableCategoryOfVacancies="create table if not exists vacation_category (\n" +
-            "vac_categ_id  int primary key auto_increment not null,\n" +
-            "name varchar(25) unique,\n" +
-            "index(name)\n" +
-            ")";
-
-    public static  String insertCategoryOfVacancies="insert into vacation_category(name) value('Full employment'),('Part-time employment'),('Watch'),('Internship'),('Project work')";
-
-    public static String createTableExperience="create table if not exists founder.experience(\n" +
-            "experience_id  int primary key auto_increment not null,\n" +
-            "experience varchar(25)\n" +
-            ");";
-
-    public static String insertExperience="insert into experience(experience) value('No experience'),('Irrelevant'),('From 1 year to 3 years'),('3 to 6 years'),('Over 6 years')";
-
-    public static String createTableProfession="create table if not exists founder.profession(\n" +
-            "profession_id  int primary key auto_increment not null,\n" +
-            "profession_name varchar(35)\n" +
-            ");";
-    public static String insertProfession="insert into profession(profession_name) value('Software developer'),('Computer scientist'),('Computer systems analyst'),('Technology specialist'),('Network engineer'),('Computer repair technician'),('Web designer'),('Network administrator'),('Technical writer'),('Analyst'),('Computer hardware engineer')";
-
-    public static String createTableEducation="create table if not exists education(\n" +
-            "            education_id  int primary key auto_increment not null,\n" +
-            "            education_name varchar(25)\n" +
-            "            )";
-    public static String insertEducation="insert into education(education_name) value('Basic general'),('Secondary general'),('Secondary vocational '),('Higher')";
-
-    public static String createTableCurrency="create table if not exists currency(\n" +
-            "currency_id  int primary key auto_increment not null,\n" +
-            "currency_name varchar(5)\n" +
-            ");";
-    public static String insertCurrency="insert into currency(currency_name) value('RUB'),('BYN'),('CNY'),('USD'),('EUR'),('KZT')";
-
-    public static String createTableTimetable="create table if not exists founder.timetable(\n" +
-            "timetable_id  int primary key auto_increment not null,\n" +
-            "timetable_name varchar(25)\n" +
-            ");";
-    public static String insertTimeTable="insert into timetable(timetable_name) value('Fixed schedule'),('Flexible working hours')";
-
-    public static  String createTableSkills="create table if not exists founder.skills(\n" +
-            "skills_id  int primary key auto_increment not null,\n" +
-            "skills_name varchar(15)\n" +
-            ");";
-
-    public static String createTableVacancies="create table if not exists vacancies(\n" +
-            "\tvacancy_id int primary key auto_increment not null,\n" +
-            "    title varchar(35),\n" +
-            "    experience_id int,\n" +
-            "    profession_id int,\n" +
-            "    vac_categ_id int,\n" +
-            "    education_id int,\n" +
-            "    salary MEDIUMINT,\n" +
-            "    currency_id int,\n" +
-            "    timetable_id int,\n" +
-            "    user_id int,\n" +
-            "    foreign key (experience_id) references experience(experience_id),\n" +
-            "    foreign key (profession_id) references profession(profession_id),\n" +
-            "    foreign key (vac_categ_id) references vacation_category(vac_categ_id),\n" +
-            "    foreign key (education_id) references education(education_id),\n" +
-            "    foreign key (currency_id) references currency(currency_id),\n" +
-            "    foreign key (timetable_id) references timetable(timetable_id),\n" +
-            "    foreign key (user_id) references users(user_id),\n" +
-            "    description text,\n" +
-            "    coordinate geometry,\n" +
-            "    city_id int,\n" +
-            "    foreign key (city_id) references cities(city_id),\n" +
-            "    address tinytext,\n" +
-            "    phone varchar(10),\n" +
-            "    mail varchar(25),\n" +
-            "    skill_id int,\n" +
-            "    foreign key (skill_id) references skill(skill_id),\n" +
-            "    status boolean default 1\n" +
-            ");";
     public static String selectMultiplePollLines="SELECT poll_lines.line_id FROM polls\n" +
             "inner join poll_lines on (polls.poll_id=poll_lines.poll_id)\n" +
             "where polls.poll_id=? and polls.type='MULTIPLE'";
