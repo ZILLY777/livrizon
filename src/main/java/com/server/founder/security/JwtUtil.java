@@ -47,14 +47,14 @@ public class JwtUtil {
         claim.put("id", user_id);
         claim.put("role", role);
         claim.put("type","ACCESS_TOKEN");
-        return createToken(claim,3 * 60 * 60 * 1000);
+        return createToken(claim,3 * 60 * 60 * 100000);
     }
     public static String generateTemporaryToken(Login login) throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
         Map<String, Object> claim = new HashMap<>();
         claim.put("type","REGISTER_TOKEN");
         claim.put("registration",login.getRegistration());
         claim.put("sub",login.getUsername());
-        return createToken(claim,60 * 60 * 1000);
+        return createToken(claim,60 * 60 * 100000);
     }
     public static boolean validSign(String token) throws NoSuchAlgorithmException, InvalidKeyException {
         String[] jwt=token.split("\\.");
