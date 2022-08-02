@@ -18,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class UserRequest {
@@ -28,17 +29,9 @@ public class UserRequest {
             try {
                 Connection connection=Function.connect();
                 PreparedStatement getRelationWithUser=connection.prepareStatement(Statement.getRelationWithUser(next));
-                getRelationWithUser.setInt(1,user_id);
+                getRelationWithUser.setInt(1,owner_id);
                 getRelationWithUser.setInt(2,user_id);
-                getRelationWithUser.setInt(3,user_id);
-                getRelationWithUser.setInt(4,owner_id);
-                getRelationWithUser.setInt(5,user_id);
-                getRelationWithUser.setInt(6,user_id);
-                getRelationWithUser.setInt(7,user_id);
-                getRelationWithUser.setInt(8,user_id);
-                getRelationWithUser.setInt(9,user_id);
-                getRelationWithUser.setInt(10,user_id);
-                if(next!=null) getRelationWithUser.setObject(11,Integer.parseInt(next));
+                if(next!=null) getRelationWithUser.setObject(3,Integer.parseInt(next));
                 ResultSet resultSet=getRelationWithUser.executeQuery();
                 List<List<UserProfile>> list=new ArrayList<>();
                 while (resultSet.next()){
@@ -74,29 +67,11 @@ public class UserRequest {
         ResponseEntity<?> response;
         try {
             Connection connection=Function.connect();
-            String[] listOfName=name.split(Constant.space,2);
-            Object user_id=JwtUtil.extractIdOrNull(auth);
-            PreparedStatement findUsersByName=connection.prepareStatement(Statement.findUsersByName(user_id,listOfName,next));
-            findUsersByName.setObject(1, user_id);
-            findUsersByName.setObject(2, user_id);
-            findUsersByName.setObject(3, user_id);
-            findUsersByName.setString(4, listOfName[0] + "%");
-            if (listOfName.length == 1) {
-                findUsersByName.setString(5, listOfName[0] + "%");
-                findUsersByName.setObject(6, user_id);
-                if (user_id != null) {
-                    findUsersByName.setObject(7, user_id);
-                    if (next != null) findUsersByName.setInt(8, Integer.parseInt(next));
-                }
-            } else {
-                findUsersByName.setString(5, listOfName[1] + "%");
-                findUsersByName.setString(6, listOfName[0] + "%");
-                findUsersByName.setString(7, listOfName[1] + "%");
-                findUsersByName.setObject(8, user_id);
-                if (user_id != null) {
-                    findUsersByName.setObject(9, user_id);
-                    if (next != null) findUsersByName.setInt(10, Integer.parseInt(next));
-                }
+            String[] listOfName=name.split(Constant.space);
+            PreparedStatement findUsersByName=connection.prepareStatement(Statement.findUsersByName(listOfName.length,next));
+            findUsersByName.setInt(1,JwtUtil.extractId(auth));
+            for (int i=0;i<listOfName.length;i++){
+                findUsersByName.setString(i+2,listOfName[i]+"%");
             }
             ResultSet resultSet=findUsersByName.executeQuery();
             List<UserProfile> list=new ArrayList<>();
@@ -110,13 +85,13 @@ public class UserRequest {
         }
         return response;
     }
-    public static ResponseEntity<?> loadAvatar(String auth, MultipartFile file, MultipartFile preview){
+    public static ResponseEntity<?> loadAvatar(String auth, MultipartFile avatar, MultipartFile preview){
         ResponseEntity<?> response;
-        if(file.getContentType().substring(0,5).equals(Constant.image) && preview.getContentType().substring(0,5).equals(Constant.image)){
+        if(avatar!=null && preview!=null && Objects.requireNonNull(avatar.getContentType()).substring(0,5).equals(Constant.image) && Objects.requireNonNull(preview.getContentType()).substring(0,5).equals(Constant.image)){
             try {
                 Connection connection=Function.connect();
                 int user_id=JwtUtil.extractId(auth);
-                FileRequest.loadAvatar(user_id, FileRequest.loadFile(file,true,user_id,connection),connection);
+                FileRequest.loadAvatar(user_id, FileRequest.loadFile(avatar,true,user_id,connection),connection);
                 FileRequest.loadPreviewAvatar(user_id, FileRequest.loadFile(preview,false,user_id,connection),connection);
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.SUCCESS));
                 connection.close();
@@ -220,13 +195,6 @@ public class UserRequest {
         }
         return response;
     }
-    public static int selectNumberFilesOfPage(int user_id,Connection connection) throws SQLException {
-        PreparedStatement selectNumberFilesOfPage=connection.prepareStatement(Statement.selectNumberOfFileFromPage);
-        selectNumberFilesOfPage.setInt(1,user_id);
-        ResultSet resultSet=selectNumberFilesOfPage.executeQuery();
-        resultSet.next();
-        return resultSet.getInt(Column.number);
-    }
     public static List<FileView> findFilesFromPage(int user_id,Object last,Connection connection) throws SQLException {
         PreparedStatement selectPreviewFileOfPage=connection.prepareStatement(Statement.selectPreviewFilesOfPage+
                 Statement.andFindByLess(Column.post_file_id,last)+
@@ -244,14 +212,7 @@ public class UserRequest {
     public static PageInformation findPageInformation(Object owner_id, int user_id, Connection connection) throws SQLException {
         PreparedStatement selectPageInformation=connection.prepareStatement(Statement.selectPageInformation);
         selectPageInformation.setObject(1,owner_id);
-        selectPageInformation.setObject(2,owner_id);
-        selectPageInformation.setInt(3,user_id);
-        selectPageInformation.setInt(4,user_id);
-        selectPageInformation.setObject(5,owner_id);
-        selectPageInformation.setInt(6,user_id);
-        selectPageInformation.setInt(7,user_id);
-        selectPageInformation.setInt(8,user_id);
-        selectPageInformation.setInt(9,user_id);
+        selectPageInformation.setObject(2,user_id);
         ResultSet resultSet=selectPageInformation.executeQuery();
         if(resultSet.next()) return new PageInformation(resultSet);
         else return null;
@@ -268,17 +229,10 @@ public class UserRequest {
             ));
             connection.close();
         } catch (SQLException e){
+            System.out.println(e);
             response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
         return response;
-    }
-    public static Registration findTokenInformation(String username,String password,Connection connection) throws SQLException {
-        PreparedStatement findUserBy=connection.prepareStatement(Statement.findTokenInformation);
-        findUserBy.setObject(1,username);
-        findUserBy.setObject(2,password);
-        ResultSet resultSet=findUserBy.executeQuery();
-        Registration registration =new Registration();
-        return registration;
     }
     public static Login findLogin(String username, Connection connection) throws SQLException {
         PreparedStatement findLoginByUsername=connection.prepareStatement(Statement.findItemBy(TableName.login, Column.all, Column.username));

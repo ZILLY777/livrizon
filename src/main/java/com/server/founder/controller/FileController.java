@@ -17,7 +17,7 @@ public class FileController {
     @PostMapping("/load/{url}")
     ResponseEntity<?> load(@RequestHeader String auth, @RequestParam MultipartFile file,@PathVariable String url) {
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.ADMIN);
-        if(tokenState == ResponseState.ACCESS) return FileRequest.loadFileApart(file,url);
+        if(tokenState == ResponseState.ACCESS) return FileRequest.loadFileApart(auth,file,url);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
     @PostMapping("/like/{url}")
@@ -32,10 +32,10 @@ public class FileController {
         if(tokenState == ResponseState.ACCESS) return FileRequest.saveFileComment(auth,url,text);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
-    @DeleteMapping("/like/{url}")
-    ResponseEntity<?> deleteLike(@RequestHeader String auth, @PathVariable String url){
+    @DeleteMapping("/like/{file_id}")
+    ResponseEntity<?> deleteLike(@RequestHeader String auth, @PathVariable int file_id){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-        if(tokenState == ResponseState.ACCESS) return FileRequest.deleteLikeOnFile(auth,url);
+        if(tokenState == ResponseState.ACCESS) return FileRequest.deleteLikeOnFile(auth,file_id);
         return ResponseEntity.badRequest().body(new Response(tokenState));
     }
     @DeleteMapping("/comment/{comment_id}")

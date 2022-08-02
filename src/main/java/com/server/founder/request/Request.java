@@ -175,6 +175,16 @@ public class Request {
         PreparedStatement createTableCitizenship=connection.prepareStatement(Statement.createTableCitizenship);
         PreparedStatement createTableCity=connection.prepareStatement(Statement.createTableCity);
         PreparedStatement createTableUserCitizens=connection.prepareStatement(Statement.createTableUserCitizens);
+        PreparedStatement createTableUserProfessions=connection.prepareStatement(Statement.createTableUserProfessions);
+        PreparedStatement createTableUserNames=connection.prepareStatement(Statement.createTableUserNames);
+        PreparedStatement createTableExperience=connection.prepareStatement(Statement.createTableExperience);
+        PreparedStatement createTableProfession=connection.prepareStatement(Statement.createTableProfession);
+        PreparedStatement createTableVacationCategories=connection.prepareStatement(Statement.createTableVacationCategories);
+        PreparedStatement createTableEducation=connection.prepareStatement(Statement.createTableEducation);
+        PreparedStatement createTableCurrencies=connection.prepareStatement(Statement.createTableCurrencies);
+        PreparedStatement createTableTimetable=connection.prepareStatement(Statement.createTableTimetable);
+        PreparedStatement createTableSkills=connection.prepareStatement(Statement.createTableSkills);
+        PreparedStatement createTableVacancies=connection.prepareStatement(Statement.createTableVacancies);
         createTableUsers.execute();
         createTableFiles.execute();
         createTableLogin.execute();
@@ -208,6 +218,16 @@ public class Request {
         createTableCitizenship.execute();
         createTableCity.execute();
         createTableUserCitizens.execute();
+        createTableUserProfessions.execute();
+        createTableUserNames.execute();
+        createTableExperience.execute();
+        createTableProfession.execute();
+        createTableVacationCategories.execute();
+        createTableEducation.execute();
+        createTableCurrencies.execute();
+        createTableTimetable.execute();
+        createTableSkills.execute();
+        createTableVacancies.execute();
         connection.close();
     }
     public static void deleteAllVotes(int poll_id ,int user_id,Connection connection) throws SQLException {
@@ -216,11 +236,11 @@ public class Request {
         deleteAllVotes.setInt(2,user_id);
         deleteAllVotes.execute();
     }
-    public static void saveUserConnect(int user_id_1,int user_id_2,Connection connection) throws SQLException {
-        PreparedStatement saveUserConnection=connection.prepareStatement(Statement.saveUserConnection);
-        saveUserConnection.setInt(1,Math.min(user_id_1,user_id_2));
-        saveUserConnection.setInt(2,Math.max(user_id_1,user_id_2));
-        saveUserConnection.execute();
+    public static void saveUserConnects(int owner_id,int user_id,Connection connection) throws SQLException {
+        PreparedStatement saveUserConnects=connection.prepareStatement(Statement.saveUserConnects);
+        saveUserConnects.setInt(1,Math.min(owner_id,user_id));
+        saveUserConnects.setInt(2,Math.max(owner_id,user_id));
+        saveUserConnects.execute();
     }
     public static ResponseState ItemExistsWithStatus(String tableName,String column,Object item,Connection connection) throws SQLException {
         PreparedStatement findItemBy;

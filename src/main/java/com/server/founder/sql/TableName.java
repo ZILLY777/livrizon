@@ -5,6 +5,7 @@ public class TableName {
     public static String user_avatar="user_avatar";
     public static String user_avatars="user_avatars";
     public static String users= "users";
+    public static String params= "params";
     public static String message_owner= "message_owner";
     public static String chats= "chats";
     public static String repost= "repost";

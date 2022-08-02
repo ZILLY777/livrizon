@@ -99,7 +99,7 @@ public class SubscribeRequest {
                 Connection connection = Function.connect();
                 ResponseState status = checkSubscribe(owner_id, user_id, connection);
                 if (status == ResponseState.EXIST) {
-                    Request.saveUserConnect(JwtUtil.extractId(auth), user_id, connection);
+                    Request.saveUserConnects(JwtUtil.extractId(auth), user_id, connection);
                     subscribe(owner_id, user_id, connection);
                     response = ResponseEntity.ok().body(new Response(ResponseState.SUCCESS));
                 }
@@ -141,27 +141,27 @@ public class SubscribeRequest {
     public static ResponseEntity<?> getHandshakes(String auth, int handshakes, Object last){
         ResponseEntity<?> response;
         int owner_id=JwtUtil.extractId(auth);
-            try {
-                Connection connection = Function.connect();
+        try {
+            Connection connection = Function.connect();
 
-                PreparedStatement getHandShake=connection.prepareStatement(switch(handshakes){
-                    case 1 -> Statement.getHandshakeFirstGen(last);
-                    case 2 -> Statement.getHandshakeSecondGen(last);
-                    default -> Statement.getHandshakeThirdGen(last);
-                });
-                getHandShake.setInt(1,owner_id);
-                if(last!=null) getHandShake.setObject(2,last);
-                ResultSet resultSet=getHandShake.executeQuery();
-                List<Subscribe> list=new ArrayList<>();
-                while (resultSet.next()){
-                    list.add(new Subscribe(resultSet));
-                }
-                connection.close();
-                response = ResponseEntity.ok().body(list);
-            } catch (SQLException e) {
-                response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
+            PreparedStatement getHandShake=connection.prepareStatement(switch(handshakes){
+                case 1 -> Statement.getHandshakeFirstGen(last);
+                case 2 -> Statement.getHandshakeSecondGen(last);
+                default -> Statement.getHandshakeThirdGen(last);
+            });
+            getHandShake.setInt(1,owner_id);
+            if(last!=null) getHandShake.setObject(2,last);
+            ResultSet resultSet=getHandShake.executeQuery();
+            List<Subscribe> list=new ArrayList<>();
+            while (resultSet.next()){
+                list.add(new Subscribe(resultSet));
             }
-            return response;
+            connection.close();
+            response = ResponseEntity.ok().body(list);
+        } catch (SQLException e) {
+            response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
+        }
+        return response;
 
     }
 

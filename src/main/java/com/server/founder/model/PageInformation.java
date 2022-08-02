@@ -19,7 +19,7 @@ public class PageInformation {
     ProfileStatistic statistic;
     String description;
     Date birthday;
-    String city;
+    String city_id;
 
     public PageInformation() {
     }
@@ -29,6 +29,6 @@ public class PageInformation {
         this.statistic =new ProfileStatistic(resultSet);
         this.description = resultSet.getString(Column.description);
         this.birthday = resultSet.getDate(Column.birthday);
-        this.city = resultSet.getString(Column.city);
+        this.city_id = resultSet.getString(Column.city_id);
     }
 }
