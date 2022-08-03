@@ -63,12 +63,11 @@ public class LoginRequest {
                         FileRequest.loadPreviewAvatar(user_id, FileRequest.loadFile(preview,false,user_id,connection),connection);
                     }
                     ChatRequest.createChat(user_id,user_id,connection);
-                    response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateAccessToken(user_id,registration.getUserType())));
+                    response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateAccessToken(user_id,Role.USER)));
                 }
                 else response=ResponseEntity.badRequest().body(new Response(ResponseState.ALREADY_EXIST));
                 connection.close();
             } catch (SQLException e) {
-                System.out.println(e);
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
             } catch (IOException e) {
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.FILE_ERROR));
@@ -133,7 +132,7 @@ public class LoginRequest {
             findTokenInformation.setObject(2,Encrypt.getHash(authentication.getPassword()));
             ResultSet resultSet=findTokenInformation.executeQuery();
             if(resultSet.next())
-                response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateAccessToken(resultSet.getInt(Column.user_id),UserType.valueOf(resultSet.getString(Column.type)))));
+                response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateAccessToken(resultSet.getInt(Column.user_id),Role.valueOf(resultSet.getString(Column.role)))));
             else
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.INCORRECT_LOGIN_PASSWORD));
             connection.close();

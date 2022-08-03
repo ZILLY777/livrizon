@@ -81,25 +81,25 @@ public class Statement {
             "skill_id int primary key auto_increment not null,\n" +
             "name varchar(50) not null,\n" +
             "unique(name),\n"+
-            "index(name)\n" +
+            "fulltext (name)\n" +
             ")";
     public static String createTableVacationSkills="create table if not exists founder.vacancy_skills(\n" +
-            "vacancy_id int primary key auto_increment not null,\n" +
+            "vacancy_id int,\n" +
             "skill_id int not null,\n" +
             "unique(vacancy_id,skill_id),\n"+
             "foreign key (skill_id) references skills(skill_id)\n" +
-            "on delete restrict,\n" +
+            "on delete cascade,\n" +
             "foreign key (vacancy_id) references vacancies(vacancy_id)\n" +
             "on delete restrict\n" +
             ")";
     public static String createTableUserSkills="create table if not exists founder.user_skills(\n" +
-            "user_id int primary key auto_increment not null,\n" +
+            "user_id int,\n" +
             "skill_id int not null,\n" +
             "unique(user_id,skill_id),\n"+
-            "foreign key (skill_id) references skills(skill_id)\n" +
+            "foreign key (user_id) references users(user_id)\n" +
             "on delete restrict,\n" +
-            "foreign key (user_id) references vacancies(user_id)\n" +
-            "on delete restrict\n" +
+            "foreign key (skill_id) references skills(skill_id)\n" +
+            "on delete cascade\n" +
             ")";
     public static String createTableUserNames="create table if not exists user_names(\n" +
             "user_id int not null,\n" +
@@ -109,9 +109,28 @@ public class Statement {
             "foreign key (user_id) references users(user_id)\n" +
             "on delete restrict\n" +
             ")";
+    public static String checkSkillsExist(int params){
+        return "insert into skills (name) select column_0 from ( VALUES "+appendRowValue(params)+") as skills\n" +
+                "where skills.column_0 not in (SELECT name FROM skills where name like skills.column_0)";
+    }
+    public static String insertUserSkills(int params){
+        return "insert into user_skills select params.user_id,skills.skill_id from (select ? as user_id) as params\n" +
+                "inner join skills where name in"+Function.toValues(params)+" and \n" +
+                "not (select count(user_skills.skill_id) from user_skills where user_skills.user_id=params.user_id and user_skills.skill_id=skills.skill_id)";
+    }
+    public static String appendRowValue(int params){
+        String str="";
+        for (int i=0;i<params;i++){
+            if(i!=0) str+=",";
+            str+="ROW(?)";
+        }
+        return str;
+    }
     public static String createTableUserProfessions="create table if not exists user_professions(\n" +
             "user_id int not null,\n" +
-            "profession text not null,\n" +
+            "profession_id int not null,\n" +
+            "foreign key (profession_id) references professions(profession_id)\n" +
+            "on delete restrict,\n" +
             "foreign key (user_id) references users(user_id)\n" +
             "on delete restrict\n" +
             ")";
@@ -133,7 +152,9 @@ public class Statement {
             ")";
     public static String createTableProfessions="create table if not exists professions(\n" +
             "profession_id int auto_increment primary key not null,\n" +
-            "name text\n" +
+            "name text,\n" +
+            "unique(name),\n" +
+            "fulltext (name)\n" +
             ")";
     public static String createTableUserConnection="create table if not exists user_connections(\n" +
             "\tconnection_id int auto_increment primary key not null,\n" +
@@ -355,8 +376,7 @@ public class Statement {
             "birthday date,\n" +
             "gender enum('MAN', 'WOMAN'),\n" +
             "description text,\n" +
-            "hobbies text,\n" +
-            "qualities text,\n" +
+            "fulltext(description),\n"+
             "city_id int,\n" +
             "foreign key (city_id) references cities(city_id)\n" +
             "on delete restrict\n" +
@@ -1038,7 +1058,7 @@ public class Statement {
     public static String findItemBy (String tableName,String column,String by){
         return select(column)+tableName+" "+findBy(by);
     }
-    public static String findTokenInformation="SELECT user_id,type FROM users where users.username=? && password=?";
+    public static String findTokenInformation="SELECT user_id,role FROM users where users.username=? && password=?";
     public static String subscribe="replace into "+TableName.subscribes+" (user_id,sub_id) values(?,?)";
     public static String deleteLikeOnPostPreviewFile="delete from file_likes where file_likes.file_id=(SELECT file_id from post_files \n" +
             "where post_id=(select post_id from user_posts where user_post_id=?) and post_files.status=true\n" +

@@ -22,6 +22,16 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class UserRequest {
+    public static ResponseEntity<?> saveUserSkills(String auth,List<String> skills){
+        try {
+            Connection connection=Function.connect();
+            saveUserSkills(JwtUtil.extractId(auth),skills,connection);
+            connection.close();
+            return ResponseEntity.ok().body(new Response(ResponseState.SUCCESS));
+        } catch (SQLException e){
+            return ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
+        }
+    }
     public static ResponseEntity<?> getRelationWithUser(String auth,int user_id,String next){
         ResponseEntity<?> response;
         int owner_id=JwtUtil.extractId(auth);
@@ -63,8 +73,17 @@ public class UserRequest {
             return ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
     }
-    public static void saveSkills(List<String> skills){
-
+    public static void saveUserSkills(int user_id,List<String> skills,Connection connection) throws SQLException {
+        PreparedStatement checkSkillsExist=connection.prepareStatement(Statement.checkSkillsExist(skills.size()));
+        PreparedStatement insertUserSkills=connection.prepareStatement(Statement.insertUserSkills(skills.size()));
+        insertUserSkills.setInt(1,user_id);
+        for (int i=0;i<skills.size();i++){
+            checkSkillsExist.setString(i+1,skills.get(i));
+            insertUserSkills.setString(i+2,skills.get(i));
+        }
+        System.out.println(checkSkillsExist);
+        checkSkillsExist.execute();
+        insertUserSkills.execute();
     }
     public static ResponseEntity<?> findUsersByName(String auth,String name,String next){
         ResponseEntity<?> response;

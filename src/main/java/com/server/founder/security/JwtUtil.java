@@ -42,10 +42,10 @@ public class JwtUtil {
         Object exp=extractAllClaims(token).get("exp");
         return exp == null || !((long)(double) exp < System.currentTimeMillis());
     }
-    public static String generateAccessToken(int user_id,UserType type) throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
+    public static String generateAccessToken(int user_id,Role role) throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
         Map<String, Object> claim = new HashMap<>();
         claim.put("id", user_id);
-        claim.put("role", type);
+        claim.put("role", role);
         claim.put("type","ACCESS_TOKEN");
         return createToken(claim, 3L * 60 * 60 * 1000000000);
     }

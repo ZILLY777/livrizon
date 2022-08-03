@@ -16,12 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    @PostMapping("/avatar/load")
-    ResponseEntity<?> loadAvatar(@RequestHeader String auth,@RequestParam MultipartFile file,@RequestParam MultipartFile preview){
-        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
-        if(tokenState == ResponseState.ACCESS) return UserRequest.loadAvatar(auth,file,preview);
-        return ResponseEntity.badRequest().body(new Response(tokenState));
-    }
     @DeleteMapping("/avatar/delete/{file_id}")
     ResponseEntity<?> deleteUserAvatar(@RequestHeader String auth,@PathVariable int file_id){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);

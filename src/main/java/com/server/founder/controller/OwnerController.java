@@ -14,11 +14,24 @@ import com.server.founder.sql.Statement;
 import com.server.founder.sql.TableName;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
 public class OwnerController {
+    @PostMapping("/save/skills")
+    ResponseEntity<?> saveUserSkills(@RequestHeader String auth,@RequestParam List<String> skills){
+        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
+        if(tokenState == ResponseState.ACCESS) return UserRequest.saveUserSkills(auth,skills);
+        return ResponseEntity.badRequest().body(new Response(tokenState));
+    }
+    @PostMapping("/avatar/load")
+    ResponseEntity<?> loadAvatar(@RequestHeader String auth, @RequestParam MultipartFile file, @RequestParam MultipartFile preview){
+        ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
+        if(tokenState == ResponseState.ACCESS) return UserRequest.loadAvatar(auth,file,preview);
+        return ResponseEntity.badRequest().body(new Response(tokenState));
+    }
     @GetMapping("/my_sub")
     ResponseEntity<?> mySub(@RequestHeader String auth,@RequestParam int sort,@RequestParam(required = false) String next){
         ResponseState tokenState = JwtUtil.validateToken(auth, TokenType.ACCESS_TOKEN, Role.USER);
