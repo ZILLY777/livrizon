@@ -22,7 +22,7 @@ public class Statement {
             "city_id int,\n" +
             "address tinytext,\n" +
             "status boolean default 1,\n" +
-            "foreign key (experience_id) references experience(experience_id)\n" +
+            "foreign key (experience_id) references vacancy_experience(experience_id)\n" +
             "on delete restrict,\n" +
             "foreign key (profession_id) references professions(profession_id)\n" +
             "on delete restrict,\n" +
@@ -47,7 +47,7 @@ public class Statement {
 
     public static String insertCategoryOfVacancies="insert into vacation_category(name) value('Full employment'),('Part-time employment'),('Watch'),('Internship'),('Project work')";
 
-    public static String createTableExperience="create table if not exists founder.experience(\n" +
+    public static String createTableExperience="create table if not exists founder.vacancy_experience(\n" +
             "experience_id int primary key auto_increment not null,\n" +
             "name varchar(25)\n" +
             ")";
@@ -76,13 +76,18 @@ public class Statement {
             ")";
     public static String insertTimeTable="insert into timetable(name) value('Fixed schedule'),('Flexible working hours')";
 
-    public static String createTableSkills="create table if not exists founder.skills(\n" +
+    public static String createTableSkills="create table if not exists founder.vacancy_skills(\n" +
             "vacancy_id int primary key auto_increment not null,\n" +
             "name varchar(15),\n" +
             "foreign key (vacancy_id) references vacancies(vacancy_id)\n" +
             "on delete restrict\n" +
             ")";
-
+    public static String createUserSkills="create table if not exists founder.user_skills(\n" +
+            "user_id int primary key auto_increment not null,\n" +
+            "name varchar(15),\n" +
+            "foreign key (user_id) references vacancies(user_id)\n" +
+            "on delete restrict\n" +
+            ")";
     public static String createTableUserNames="create table if not exists user_names(\n" +
             "user_id int not null,\n" +
             "name varchar(50) not null,\n" +
@@ -337,7 +342,6 @@ public class Statement {
             "gender enum('MAN', 'WOMAN'),\n" +
             "description text,\n" +
             "hobbies text,\n" +
-            "skills text,\n" +
             "qualities text,\n" +
             "city_id int,\n" +
             "foreign key (city_id) references cities(city_id)\n" +
