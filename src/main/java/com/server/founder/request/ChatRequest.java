@@ -94,7 +94,7 @@ public class ChatRequest {
         checkPrivetChat.setInt(3,user_id);
         return checkPrivetChat.executeQuery();
     }
-    private static int createChat(int user_id_1,int user_id_2,Connection connection) throws SQLException {
+    public static int createChat(int user_id_1,int user_id_2,Connection connection) throws SQLException {
         PreparedStatement insertIntoChats=connection.prepareStatement(Statement.insertIntoChats);
         insertIntoChats.setString(2, String.valueOf(ChatType.PRIVET));
         int chat_id=Request.tableIndex(TableName.chats,Column.chat_id,connection)+1;

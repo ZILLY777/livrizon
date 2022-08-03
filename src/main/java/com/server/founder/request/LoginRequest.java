@@ -27,36 +27,33 @@ import static com.server.founder.function.Function.connect;
 public class LoginRequest {
     public static ResponseEntity<?> authorization (String auth, Registration registration, MultipartFile avatar, MultipartFile preview) {
         ResponseEntity<?> response;
-        if(!(registration.getRole()==Role.USER || registration.getRole()==Role.COMPANY))
-            response=ResponseEntity.badRequest().body(new Response(ResponseState.REGISTRATION_TYPE_ERROR));
-        else if(!(avatar==null && preview==null || avatar!=null && preview!=null))
+        if(!(avatar==null && preview==null || avatar!=null && preview!=null))
             response=ResponseEntity.badRequest().body(new Response(ResponseState.EMPTY_FILE));
-        else if(avatar!= null && avatar.getSize()>0 && avatar.getSize()<Function.toMB(100) && preview.getSize()>0 && preview.getSize()<Function.toMB(100) && preview.getSize()<avatar.getSize())
+        else if(avatar!=null && !(avatar.getSize() > 0 && avatar.getSize() < Function.toMB(100) && preview.getSize() > 0 && preview.getSize() < Function.toMB(100)))
             response=ResponseEntity.badRequest().body(new Response(ResponseState.SIZE_ERROR));
         else if(registration.getName()==null)
             response=ResponseEntity.badRequest().body(new Response(ResponseState.EMPTY_NAME));
+        else if(!Function.validateDate(registration.getBirthday()))
+            response=ResponseEntity.badRequest().body(new Response(ResponseState.INCORRECT_DATE));
         else if(registration.getName().length()>50)
             response=ResponseEntity.badRequest().body(new Response(ResponseState.LENGTH_ERROR));
         else {
             try {
-                Connection connection=Function.connect();
+                Connection connection= connect();
                 HashMap token=JwtUtil.extractAllClaims(auth);
                 String username=String.valueOf(token.get(Column.sub));
                 if (!Request.ItemExist(TableName.users, Column.username,username,connection)){
-                    PreparedStatement insertUser=connection.prepareStatement(Statement.insertUser(registration.getRole()));
+                    PreparedStatement insertUser=connection.prepareStatement(Statement.insertUser(registration.getUserType()));
                     insertUser.setString(2,username);
                     insertUser.setString(3,Encrypt.getHash(registration.getPassword()));
-                    insertUser.setString(4,String.valueOf(registration.getRole()));
+                    insertUser.setString(4,String.valueOf(registration.getUserType()));
                     insertUser.setString(5,String.valueOf(token.get(Column.registration)));
                     insertUser.setString(6,registration.getName());
-                    insertUser.setString(7, registration.getDescription());
-                    insertUser.setInt(8, registration.getCity_id());
-                    if(registration.getRole()==Role.USER){
-                        insertUser.setDate(9,null);
+                    insertUser.setString(7,registration.getDescription());
+                    insertUser.setInt(8,registration.getCity_id());
+                    if(registration.getUserType()==UserType.PERSON){
+                        insertUser.setString(9,registration.getBirthday());
                         insertUser.setString(10,String.valueOf(registration.getGender()));
-                        insertUser.setString(11, registration.getHobbies());
-                        insertUser.setString(12, registration.getSkills());
-                        insertUser.setString(13, registration.getQualities());
                     }
                     int user_id=Request.tableIndex(TableName.users, Column.user_id,connection)+1;
                     insertUser.setInt(1,user_id);
@@ -65,7 +62,8 @@ public class LoginRequest {
                         FileRequest.loadAvatar(user_id, FileRequest.loadFile(avatar, true, user_id, connection), connection);
                         FileRequest.loadPreviewAvatar(user_id, FileRequest.loadFile(preview,false,user_id,connection),connection);
                     }
-                    response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateAccessToken(user_id,registration.getRole())));
+                    ChatRequest.createChat(user_id,user_id,connection);
+                    response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateAccessToken(user_id,registration.getUserType())));
                 }
                 else response=ResponseEntity.badRequest().body(new Response(ResponseState.ALREADY_EXIST));
                 connection.close();
@@ -135,7 +133,7 @@ public class LoginRequest {
             findTokenInformation.setObject(2,Encrypt.getHash(authentication.getPassword()));
             ResultSet resultSet=findTokenInformation.executeQuery();
             if(resultSet.next())
-                response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateAccessToken(resultSet.getInt(Column.user_id),Role.valueOf(resultSet.getString(Column.role)))));
+                response = ResponseEntity.ok().body(new Jwt(JwtUtil.generateAccessToken(resultSet.getInt(Column.user_id),UserType.valueOf(resultSet.getString(Column.type)))));
             else
                 response = ResponseEntity.badRequest().body(new Response(ResponseState.INCORRECT_LOGIN_PASSWORD));
             connection.close();

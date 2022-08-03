@@ -4,6 +4,7 @@ import com.server.founder.constant.Constant;
 import com.server.founder.function.Encrypt;
 import com.server.founder.function.Function;
 import com.server.founder.model.Role;
+import com.server.founder.model.UserType;
 
 public class Statement {
     public static String createTableVacancies="create table if not exists vacancies(\n" +
@@ -76,15 +77,27 @@ public class Statement {
             ")";
     public static String insertTimeTable="insert into timetable(name) value('Fixed schedule'),('Flexible working hours')";
 
-    public static String createTableSkills="create table if not exists founder.vacancy_skills(\n" +
+    public static String createTableSkills="create table if not exists skills(\n" +
+            "skill_id int primary key auto_increment not null,\n" +
+            "name varchar(50) not null,\n" +
+            "unique(name),\n"+
+            "index(name)\n" +
+            ")";
+    public static String createTableVacationSkills="create table if not exists founder.vacancy_skills(\n" +
             "vacancy_id int primary key auto_increment not null,\n" +
-            "name varchar(15),\n" +
+            "skill_id int not null,\n" +
+            "unique(vacancy_id,skill_id),\n"+
+            "foreign key (skill_id) references skills(skill_id)\n" +
+            "on delete restrict,\n" +
             "foreign key (vacancy_id) references vacancies(vacancy_id)\n" +
             "on delete restrict\n" +
             ")";
-    public static String createUserSkills="create table if not exists founder.user_skills(\n" +
+    public static String createTableUserSkills="create table if not exists founder.user_skills(\n" +
             "user_id int primary key auto_increment not null,\n" +
-            "name varchar(15),\n" +
+            "skill_id int not null,\n" +
+            "unique(user_id,skill_id),\n"+
+            "foreign key (skill_id) references skills(skill_id)\n" +
+            "on delete restrict,\n" +
             "foreign key (user_id) references vacancies(user_id)\n" +
             "on delete restrict\n" +
             ")";
@@ -331,10 +344,11 @@ public class Statement {
             "user_id int primary key not null,\n" +
             "username varchar(45) unique  not null,\n" +
             "index(username),\n" +
-            "password varchar(40),\n" +
+            "password varchar(40) not null,\n" +
             "status boolean default true,\n" +
             "created date DEFAULT (CURRENT_DATE) not null,\n" +
-            "role enum('USER','ADMIN','COMPANY') not null,\n" +
+            "role enum('USER','ADMIN') not null,\n" +
+            "type ENUM('PERSON','COMPANY') not null,\n" +
             "registration enum('PHONE','MAIL'),\n" +
             "name varchar(50) not null,\n" +
             "confirm boolean default false,\n" +
@@ -622,7 +636,7 @@ public class Statement {
                 "limit 1) as gen\n";
     }
     public static String selectPageInformation="select users.user_id,users.name,user_avatar.url,users.confirm,role,registration,\n" +
-            "name,description,city_id,birthday,gender,hobbies,skills,qualities,\n" +
+            "name,description,city_id,birthday,gender,hobbies,qualities,\n" +
             "(select count(sub_id) FROM subscribes where subscribes.sub_id=users.user_id) followers,\n" +
             "(select count(sub_id) FROM subscribes where subscribes.user_id=users.user_id) subscribes,\n" +
             "(select count(user_post_id) from user_posts where user_posts.user_id=users.user_id) as post_number,\n" +
@@ -726,8 +740,10 @@ public class Statement {
                 "4-"+
                 selectGen(Function.concat(TableName.users,Column.user_id))+
                 "from (select ? as owner_id) as params\n"+
+                "inner join users\n"+
+                selectUserAvatar()+
                 findUsersByWords(params)+
-                "group by name_1.user_id\n" +
+                "group by users.user_id\n" +
                 "order by i+if(gen is null,0,gen) desc,users.confirm desc,users.user_id\n" +
                 rangeLimit(next,15);
         return str;
@@ -736,10 +752,9 @@ public class Statement {
         String str="";
         for (int i=0;i<params;i+=1){
             str+="inner join user_names as name_"+(i+1)+"\n";
-            if(i!=0)str+="on(name_"+i+".user_id=name_"+(i+1)+".user_id)\n";
+            if(i==0) str+="on(users.user_id=name_"+(i+1)+".user_id)\n";
+            else str+="on(name_"+i+".user_id=name_"+(i+1)+".user_id)\n";
         }
-        str+="inner join users\n";
-        str+=selectUserAvatar();
         if(params>0) str+="on(name_1.user_id=users.user_id)\n";
         str+="where users.user_id!=params.owner_id\n";
         for (int i=0;i<params;i+=1){
@@ -984,9 +999,9 @@ public class Statement {
             "where user_posts.page=? and user_posts.user_id=user_posts.page and user_posts.repost is null and \n" +
             "(contentType like 'image%' or contentType like 'video%')\n" +
             "order by post_files.post_file_id desc\n";
-    public static String insertUser(Role role){
-        if(role==Role.USER) return "insert into users (user_id,username,password,role,registration,name," +
-                "description,city_id,birthday,gender,hobbies,skills,qualities) value(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    public static String insertUser(UserType type){
+        if(type==UserType.PERSON) return "insert into users (user_id,username,password,type,registration,name," +
+                "description,city_id,birthday,gender) value(?,?,?,?,?,?,?,?,?,?)";
         else return "insert into users (user_id,username,password,role,registration,name," +
                 "description,city_id) value(?,?,?,?,?,?,?,?)";
     }
@@ -1023,7 +1038,7 @@ public class Statement {
     public static String findItemBy (String tableName,String column,String by){
         return select(column)+tableName+" "+findBy(by);
     }
-    public static String findTokenInformation="SELECT user_id,role FROM users where users.username=? && password=?";
+    public static String findTokenInformation="SELECT user_id,type FROM users where users.username=? && password=?";
     public static String subscribe="replace into "+TableName.subscribes+" (user_id,sub_id) values(?,?)";
     public static String deleteLikeOnPostPreviewFile="delete from file_likes where file_likes.file_id=(SELECT file_id from post_files \n" +
             "where post_id=(select post_id from user_posts where user_post_id=?) and post_files.status=true\n" +

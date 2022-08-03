@@ -4,20 +4,19 @@ package com.server.founder.model;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 
 @Data
 public class Registration {
     String password;
-    Role role;
+    UserType userType;
     String name;
     String description;
     int city_id;
-    Date birthday;
+    String birthday;
     Gender gender;
-    String hobbies;
-    String skills;
-    String qualities;
+    List<String> skills;
     public Registration() {
     }
 }

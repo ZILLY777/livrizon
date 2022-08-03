@@ -63,26 +63,32 @@ public class UserRequest {
             return ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
     }
+    public static void saveSkills(List<String> skills){
+
+    }
     public static ResponseEntity<?> findUsersByName(String auth,String name,String next){
         ResponseEntity<?> response;
-        try {
-            Connection connection=Function.connect();
-            String[] listOfName=name.split(Constant.space);
-            PreparedStatement findUsersByName=connection.prepareStatement(Statement.findUsersByName(listOfName.length,next));
-            findUsersByName.setInt(1,JwtUtil.extractId(auth));
-            for (int i=0;i<listOfName.length;i++){
-                findUsersByName.setString(i+2,listOfName[i]+"%");
+        if(name.length()>0){
+            try {
+                Connection connection=Function.connect();
+                String[] listOfName=name.split(Constant.space);
+                PreparedStatement findUsersByName=connection.prepareStatement(Statement.findUsersByName(listOfName.length,next));
+                findUsersByName.setInt(1,JwtUtil.extractId(auth));
+                for (int i=0;i<listOfName.length;i++){
+                    findUsersByName.setString(i+2,listOfName[i]+"%");
+                }
+                ResultSet resultSet=findUsersByName.executeQuery();
+                List<UserProfile> list=new ArrayList<>();
+                while (resultSet.next()){
+                    list.add(new UserProfile(resultSet,TableName.users,TableName.user_avatar));
+                }
+                response = ResponseEntity.ok().body(list);
+                connection.close();
+            } catch (SQLException e){
+                response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
             }
-            ResultSet resultSet=findUsersByName.executeQuery();
-            List<UserProfile> list=new ArrayList<>();
-            while (resultSet.next()){
-                list.add(new UserProfile(resultSet,TableName.users,TableName.user_avatar));
-            }
-            response = ResponseEntity.ok().body(list);
-            connection.close();
-        } catch (SQLException e){
-            response = ResponseEntity.badRequest().body(new Response(ResponseState.EXCEPTION));
         }
+        else response = ResponseEntity.badRequest().body(new Response(ResponseState.EMPTY));
         return response;
     }
     public static ResponseEntity<?> loadAvatar(String auth, MultipartFile avatar, MultipartFile preview){
