@@ -99,7 +99,6 @@ public class SubscribeRequest {
                 Connection connection = Function.connect();
                 ResponseState status = checkSubscribe(owner_id, user_id, connection);
                 if (status == ResponseState.EXIST) {
-                    Request.saveUserConnects(JwtUtil.extractId(auth), user_id, connection);
                     subscribe(owner_id, user_id, connection);
                     response = ResponseEntity.ok().body(new Response(ResponseState.SUCCESS));
                 }

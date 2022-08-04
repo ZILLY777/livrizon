@@ -167,7 +167,6 @@ public class Request {
         PreparedStatement createTableUserChats=connection.prepareStatement(Statement.createTableUserChats);
         PreparedStatement createTableMessageFiles=connection.prepareStatement(Statement.createTableMessageFiles);
         PreparedStatement createTableMembers=connection.prepareStatement(Statement.createTableMembers);
-        PreparedStatement createTableUserConnection=connection.prepareStatement(Statement.createTableUserConnection);
         PreparedStatement createTableInterests=connection.prepareStatement(Statement.createTableInterests);
         PreparedStatement createTableUserInterests=connection.prepareStatement(Statement.createTableUserInterests);
         PreparedStatement createTableHiddenRecommendation=connection.prepareStatement(Statement.createTableHiddenRecommendation);
@@ -178,7 +177,6 @@ public class Request {
         PreparedStatement createTableUserProfessions=connection.prepareStatement(Statement.createTableUserProfessions);
         PreparedStatement createTableUserNames=connection.prepareStatement(Statement.createTableUserNames);
         PreparedStatement createTableExperience=connection.prepareStatement(Statement.createTableExperience);
-        PreparedStatement createTableProfession=connection.prepareStatement(Statement.createTableProfession);
         PreparedStatement createTableVacationCategories=connection.prepareStatement(Statement.createTableVacationCategories);
         PreparedStatement createTableEducation=connection.prepareStatement(Statement.createTableEducation);
         PreparedStatement createTableCurrencies=connection.prepareStatement(Statement.createTableCurrencies);
@@ -212,7 +210,6 @@ public class Request {
         createTableUserChats.execute();
         createTableMessageFiles.execute();
         createTableMembers.execute();
-        createTableUserConnection.execute();
         createTableInterests.execute();
         createTableUserInterests.execute();
         createTableHiddenRecommendation.execute();
@@ -223,7 +220,6 @@ public class Request {
         createTableUserProfessions.execute();
         createTableUserNames.execute();
         createTableExperience.execute();
-        createTableProfession.execute();
         createTableVacationCategories.execute();
         createTableEducation.execute();
         createTableCurrencies.execute();
@@ -239,12 +235,6 @@ public class Request {
         deleteAllVotes.setInt(1,poll_id);
         deleteAllVotes.setInt(2,user_id);
         deleteAllVotes.execute();
-    }
-    public static void saveUserConnects(int owner_id,int user_id,Connection connection) throws SQLException {
-        PreparedStatement saveUserConnects=connection.prepareStatement(Statement.saveUserConnects);
-        saveUserConnects.setInt(1,Math.min(owner_id,user_id));
-        saveUserConnects.setInt(2,Math.max(owner_id,user_id));
-        saveUserConnects.execute();
     }
     public static ResponseState ItemExistsWithStatus(String tableName,String column,Object item,Connection connection) throws SQLException {
         PreparedStatement findItemBy;

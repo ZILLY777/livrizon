@@ -96,6 +96,7 @@ public class UserRequest {
                 for (int i=0;i<listOfName.length;i++){
                     findUsersByName.setString(i+2,listOfName[i]+"%");
                 }
+                System.out.println(findUsersByName);
                 ResultSet resultSet=findUsersByName.executeQuery();
                 List<UserProfile> list=new ArrayList<>();
                 while (resultSet.next()){

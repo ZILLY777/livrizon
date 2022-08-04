@@ -55,10 +55,6 @@ public class Statement {
 
     public static String insertExperience="insert into experience(name) value('No experience'),('Irrelevant'),('From 1 year to 3 years'),('3 to 6 years'),('Over 6 years')";
 
-    public static String createTableProfession="create table if not exists founder.profession(\n" +
-            "profession_id int primary key auto_increment not null,\n" +
-            "profession_name varchar(35)\n" +
-            ")";
     public static String createTableEducation="create table if not exists education(\n" +
             " education_id int primary key auto_increment not null,\n" +
             " name varchar(25)\n" +
@@ -152,19 +148,9 @@ public class Statement {
             ")";
     public static String createTableProfessions="create table if not exists professions(\n" +
             "profession_id int auto_increment primary key not null,\n" +
-            "name text,\n" +
+            "name text not null,\n" +
             "unique(name),\n" +
             "fulltext (name)\n" +
-            ")";
-    public static String createTableUserConnection="create table if not exists user_connections(\n" +
-            "\tconnection_id int auto_increment primary key not null,\n" +
-            "\tuser_id_1 int not null,\n" +
-            "\tuser_id_2 int not null,\n" +
-            "\tunique(user_id_1,user_id_2),\n" +
-            "\tforeign key (user_id_1) references users(user_id)\n" +
-            "\ton delete restrict,\n" +
-            "\tforeign key (user_id_2) references users(user_id)\n" +
-            "\ton delete restrict\n" +
             ")";
     public static String createTableChats="create table if not exists chats(\n" +
             "chat_id int primary key not null,\n" +
@@ -363,7 +349,8 @@ public class Statement {
             ")";
     public static String createTableUsers="create table if not exists users(\n" +
             "user_id int primary key not null,\n" +
-            "username varchar(45) unique  not null,\n" +
+            "username varchar(45) unique not null,\n" +
+            "username varchar(50) unique,\n" +
             "index(username),\n" +
             "password varchar(40) not null,\n" +
             "status boolean default true,\n" +
@@ -1063,8 +1050,6 @@ public class Statement {
     public static String deleteLikeOnPostPreviewFile="delete from file_likes where file_likes.file_id=(SELECT file_id from post_files \n" +
             "where post_id=(select post_id from user_posts where user_post_id=?) and post_files.status=true\n" +
             "order by post_files.file_id and post_files.status=true limit 1) and file_likes.user_id=?";
-    public static String saveUserConnects="insert into user_connections(user_id_1,user_id_2) select user_id_1,user_id_2 from (select ? as user_id_1,? as user_id_2) as connection\n" +
-            "where not (select count(user_connections.connection_id) from user_connections where user_connections.user_id_1=connection.user_id_1 and user_connections.user_id_2=connection.user_id_2)";
     public static String putLikeOnPostPreviewFile="insert into file_likes (file_id,user_id) select preview_file.file_id,? as user_id from (SELECT file_id from post_files \n" +
             "where post_id=(select post_id from user_posts where user_post_id=?)\n" +
             "order by post_files.file_id limit 1) as preview_file\n" +
